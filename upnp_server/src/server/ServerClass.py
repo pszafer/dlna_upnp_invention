@@ -7,7 +7,6 @@ Created on 05-07-2011
 from twisted.internet import reactor
 from coherence.base import Coherence 
 
-
 class ServerClass(object):
     '''
     classdocs
@@ -17,7 +16,7 @@ class ServerClass(object):
         '''
         Constructor
         '''
-        self.start()
+        print "initek"
         
     def check_device(self, device):
         print "check device"
@@ -29,9 +28,11 @@ class ServerClass(object):
         print "I'm started"
         config = {'logmode':'warning'}
         c = Coherence(config)
-        c.connect(self.check_device, 'detection completed')
+        print "to connect"
+        c.connect(self.check_device, 'Coherence.UPnP.Device.detection_completed')
         
 print "start"
-reactor.callWhenRunning(ServerClass)
+myClass =  ServerClass()
+reactor.callWhenRunning(ServerClass().start)
 reactor.run()
 print "stop"
