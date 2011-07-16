@@ -3,6 +3,8 @@ Created on 08-07-2011
 
 @author: xps
 '''
+import Database
+from server.Database import DBCursor, DBMedia
 
 parameters = {
               'port' : 0,
@@ -10,18 +12,20 @@ parameters = {
               }
 
 from coherence import log
-import sqlite3
+import storm
 
 class MediaServer(log.Loggable):
     logType = 'dlna_upnp_MediaServer'
+    
     
     def __init__(self):
         self.coherence = None
         #create config
     
-    def run(self):
+    def run(self, dbCursor):
         #reactor install
         self.coherence = self.get_coherence()
+        self.dbCursor = dbCursor
         if self.coherence is None:
             self.error("None Coherence")
             return
@@ -69,18 +73,26 @@ class MediaServer(log.Loggable):
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
+        kwargs['dbCursor'] = dbCursor
         server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
     
-    def create_MediaRenderer(self, coherence):
-        from coherence.upnp.devices.media_renderer import MediaRenderer
-        #TODO import VLC | MusicPlayer | Picture
-        #renderer = MediaRenderer(coherence, "PLayer", **kwargs) #TODOchange kwargs
+  
         
-        #FIXME create sqllite database
-        #FIXME we will have server there
-
 from twisted.internet import reactor
+
+dbCursor = DBCursor()
+dbCursor.begin("media.db", True)
+dbCursor.insert("media", DBMedia("aaa"))
+dbCursor.insert("media", DBMedia("bbb"))
+md = dbCursor.select("media", single = True)
+if isinstance(md, DBMedia):
+    print "One something %r, %s" % (md.id, md.name)
+else:
+    if md is not None:
+        for i in md:
+            print "something %r, %s" % (i.id, i.name)
+
 mediaServer = MediaServer()
-reactor.callWhenRunning(mediaServer.run)
+reactor.callWhenRunning(mediaServer.run, dbCursor)
 reactor.run()

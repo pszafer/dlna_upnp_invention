@@ -6,6 +6,8 @@ Created on 09-07-2011
 
 import mimetypes
 from backend import LazyContainer
+from server.Database import DBMedia
+from coherence.upnp.core import DIDLLite
 mimetypes.init()
 mimetypes.add_type('audio/x-m4a', '.m4a')
 mimetypes.add_type('audio/x-musepack', '.mpc')
@@ -25,8 +27,39 @@ from coherence.upnp.core.DIDLLite import classChooser as upnpItems
 class MediaContainer(BackendItem):
     logType = 'dlna_upnp_MediaContainer'
     
-    def __init__(self, id, ):
-        None
+    def __init__(self, id, parent_id, name, children_callback=None, store=None, play_container=False):
+        self.id = id
+        self.parent_id = parent_id
+        self.name = name
+        if children_callback != None:
+            self.children = children_callback
+        self.store = store
+        self.play_container = play_container
+        
+    def add_child(self, child):
+        self.children.append(child)
+
+    def get_children(self, start=0, end=0):
+        return BackendItem.get_children(self, start, end)
+
+
+    def get_child_count(self):
+        if callable(self.children):
+            return len(self.children())
+        else:
+            return len(self.children)
+
+
+    def get_item(self):
+        item = DIDLLite.Container(self.id, self.parent_id, self.name)
+        item.childCount = self.get_child_count()
+        return item
+
+    def get_name(self):
+        return self.name
+    
+    def get_id(self):
+        return self.id
         
 
 class MediaStore(AbstractBackendStore):
@@ -39,6 +72,7 @@ class MediaStore(AbstractBackendStore):
         self.warning("MediaStore init, what I got: %r", kwargs)
         self.db = kwargs['db']
         self.name = kwargs.get('name', 'Media')
+        self.dbCursor = kwargs['dbCursor']
         self.content = kwargs.get('content',None)
         if self.content != None:
             if(isinstance(self.content, basestring)):
@@ -59,15 +93,23 @@ class MediaStore(AbstractBackendStore):
             self.name = "TYT"
             
             
-        rootContainer = Container(None, "Test")
-        self.set_root_item(rootContainer)
+        self.rootContainer = Container(None, "Test")
+        self.set_root_item(self.rootContainer)
         self.refresh = int(kwargs.get('refresh',60))*60
-        self.nextContainer = LazyContainer(rootContainer, 'My Album2', None, self.refresh, self.retrieveAlbums())
-        rootContainer.add_child(self.nextContainer)
+        self.nextContainer = MediaContainer(id=1,parent_id=0, children_callback=["1", "2", "3"], name="tttt")
+        self.secondContainer = MediaContainer(id=2,parent_id=0, name="tttat", children_callback=["1", "2", "3"])
+        self.rootContainer.add_child(self.nextContainer, external_id=1)
+        self.rootContainer.add_child(self.secondContainer)
         self.init_completed()
+
+#    def get_by_id(self, id):
+#        return self.rootContainer
+
     
     def retrieveAlbums(self, parent=None):
-        albums = {"1":"1", "2":"2", "3":"3", "4":"4",}
+        albums = []
+        albums = self.dbCursor.select("media",  single=False)
+        # albums.add(DBMedia("nameeee"))
         return albums
     
     def upnp_init(self):
@@ -78,7 +120,7 @@ class MediaStore(AbstractBackendStore):
                         'http-get:*:image/gif:*,'
                         'http-get:*:image/png:*',
                         default=True)
-            self.server.content_directory_server.set_variable(0, 'SystemUpdateID', self.update_id)
+           # self.server.content_directory_server.set_variable(0, 'SystemUpdateID', self.update_id)
     
     def getNextID(self):
         ret = self.next_id
