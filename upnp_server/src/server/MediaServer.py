@@ -22,10 +22,10 @@ class MediaServer(log.Loggable):
         self.coherence = None
         #create config
     
-    def run(self, dbCursor):
+    def run(self):
         #reactor install
         self.coherence = self.get_coherence()
-        self.dbCursor = dbCursor
+        #self.dbCursor = dbCursor
         if self.coherence is None:
             self.error("None Coherence")
             return
@@ -73,7 +73,8 @@ class MediaServer(log.Loggable):
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
-        kwargs['dbCursor'] = dbCursor
+        #kwargs['dbCursor'] = dbCursor
+        
         server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
     
@@ -81,18 +82,18 @@ class MediaServer(log.Loggable):
         
 from twisted.internet import reactor
 
-dbCursor = DBCursor()
-dbCursor.begin("media.db", True)
-dbCursor.insert("media", DBMedia("aaa"))
-dbCursor.insert("media", DBMedia("bbb"))
-md = dbCursor.select("media", single = True)
-if isinstance(md, DBMedia):
-    print "One something %r, %s" % (md.id, md.name)
-else:
-    if md is not None:
-        for i in md:
-            print "something %r, %s" % (i.id, i.name)
+#dbCursor = DBCursor()
+#dbCursor.begin("media.db", True)
+#dbCursor.insert("media", DBMedia("aaa"))
+#dbCursor.insert("media", DBMedia("bbb"))
+#md = dbCursor.select("media", single = True)
+#if isinstance(md, DBMedia):
+#    print "One something %r, %s" % (md.id, md.name)
+#else:
+#    if md is not None:
+#        for i in md:
+#            print "something %r, %s" % (i.id, i.name)
 
 mediaServer = MediaServer()
-reactor.callWhenRunning(mediaServer.run, dbCursor)
+reactor.callWhenRunning(mediaServer.run)
 reactor.run()

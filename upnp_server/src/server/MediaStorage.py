@@ -5,9 +5,8 @@ Created on 09-07-2011
 '''
 
 import mimetypes
-from backend import LazyContainer
-from server.Database import DBMedia
 from coherence.upnp.core import DIDLLite
+import os
 mimetypes.init()
 mimetypes.add_type('audio/x-m4a', '.m4a')
 mimetypes.add_type('audio/x-musepack', '.mpc')
@@ -18,29 +17,34 @@ mimetypes.add_type('video/divx', '.divx')
 mimetypes.add_type('video/divx', '.avi')
 mimetypes.add_type('video/x-matroska', '.mkv')
 mimetypes.add_type('text/plain', '.srt')
+mimetypes.add_type('image/png', '.png')
 
-from coherence.backend import BackendItem, AbstractBackendStore, Container
-import coherence.extern.louie as louie
-
-from coherence.upnp.core.DIDLLite import classChooser as upnpItems
+from coherence.backend import BackendItem, BackendStore
 
 class MediaContainer(BackendItem):
     logType = 'dlna_upnp_MediaContainer'
     
-    def __init__(self, id, parent_id, name, children_callback=None, store=None, play_container=False):
-        self.id = id
+    def __init__(self, parent_id, name, store=None):
+        self.id = store.new_item(self)
         self.parent_id = parent_id
         self.name = name
-        if children_callback != None:
-            self.children = children_callback
+        self.mimetype = 'directory'
         self.store = store
-        self.play_container = play_container
+        self.children = []
         
     def add_child(self, child):
         self.children.append(child)
 
     def get_children(self, start=0, end=0):
-        return BackendItem.get_children(self, start, end)
+        if callable(self.children):
+            children = self.children()
+        else:
+            children = self.children
+        self.info("Container get_children %r (%r,%r)", children, start, end)
+        if end == 0:
+            return children[start:]
+        else:
+            return children[start:end]
 
 
     def get_child_count(self):
@@ -48,7 +52,6 @@ class MediaContainer(BackendItem):
             return len(self.children())
         else:
             return len(self.children)
-
 
     def get_item(self):
         item = DIDLLite.Container(self.id, self.parent_id, self.name)
@@ -60,20 +63,99 @@ class MediaContainer(BackendItem):
     
     def get_id(self):
         return self.id
-        
 
-class MediaStore(AbstractBackendStore):
+class MediaItem(BackendItem):   
+    logCategory = 'smewt_media_store'
+
+    def __init__(self,  store, media, name, parent_id, image = None):
+        self.id = store.new_item(self)
+        self.store = store
+        self.media = media
+        self.name = name
+        self.image = image
+        self.cover = image
+        self.parent_id = parent_id
+        self.item = self.create_item()
+        self.caption = None
+        
+    def create_item(self):
+        item = DIDLLite.ImageItem(self.id, self.parent_id, self.get_name())
+
+        external_url = '%s/%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
+        external_url = self.store.urlbase + str(self.id)
+        # add http resource
+        filename = "/home/xps/Obrazy/320n.png"
+        internal_url = 'file://' + filename
+        mimetype, _ = mimetypes.guess_type(filename, strict=False)
+        size = None
+        if os.path.isfile(filename):
+            size = os.path.getsize(filename)
+        
+        res = DIDLLite.Resource(internal_url, 'internal:%s:%s:*' % (self.store.server.coherence.hostname, mimetype,))
+        res.size = size
+        item.res.append(res)
+        
+        res = DIDLLite.Resource(external_url, 'http-get:*:%s:*' % (mimetype,))
+        res.size = size
+        #res.
+        item.res.append(res)
+        self.location = filename
+    
+#        if self.image and os.path.isfile(self.image):
+#            mimetype,_ = mimetypes.guess_type(self.image, strict=False)
+#            if mimetype in ('image/jpeg','image/png'):
+#                if mimetype == 'image/jpeg':
+#                    dlna_pn = 'DLNA.ORG_PN=JPEG_TN'
+#                else:
+#                    dlna_pn = 'DLNA.ORG_PN=PNG_TN'
+#
+#                dlna_tags = simple_dlna_tags[:]
+#                dlna_tags[3] = 'DLNA.ORG_FLAGS=00f00000000000000000000000000000'
+#                
+#                hash_from_path = str(id(self.image))
+#                _, ext = os.path.splitext(self.image)
+#                item.albumArtURI = ''.join((external_url,'?cover',ext))
+#
+#                new_res = DIDLLite.Resource(external_url+'?attachment='+hash_from_path,
+#                                            'http-get:*:%s:%s' % (mimetype, ';'.join([dlna_pn]+dlna_tags)))
+#                new_res.size = os.path.getsize(self.image)
+#                item.res.append(new_res)
+#                if not hasattr(item, 'attachments'):
+#                    item.attachments = {}
+#                item.attachments[hash_from_path] = coherence_utils.StaticFile(self.image)
+        return item
+        
+    def get_children(self,start=0, request_count=0):
+        return []
+        
+    def get_child_count(self):
+        return len(self.get_children())
+  
+    def get_item(self):
+        return self.item
+
+    def get_id(self):
+        return self.id
+
+    def get_name(self):
+        return self.name
+
+    def get_cover(self):
+        return self.cover  
+
+class MediaStore(BackendStore):
     logType = 'dlna_upnp_MediaStore'
     implements = ['MediaServer']
     
     def __init__(self, server, **kwargs):
-        AbstractBackendStore.__init__(self, server, **kwargs)
-        self.next_id = 1000
+        BackendStore.__init__(self, server, **kwargs)
+        self.next_id = 0
         self.warning("MediaStore init, what I got: %r", kwargs)
         self.db = kwargs['db']
         self.name = kwargs.get('name', 'Media')
-        self.dbCursor = kwargs['dbCursor']
+        #self.dbCursor = kwargs['dbCursor']
         self.content = kwargs.get('content',None)
+        self.store = FakeStore()
         if self.content != None:
             if(isinstance(self.content, basestring)):
                 self.content = [self.content]
@@ -81,7 +163,8 @@ class MediaStore(AbstractBackendStore):
             for i in self.content:
                 l += i.split(',')
             self.content = l
-        
+        self.items = {}
+        self.ids = {}
         self.plugin = kwargs['plugin']
         self.urlbase = kwargs.get('urlbase','')
         if( len(self.urlbase) > 0 and self.urlbase[len(self.urlbase)-1] != '/'):
@@ -90,40 +173,93 @@ class MediaStore(AbstractBackendStore):
         try:
             self.name = kwargs['name']
         except KeyError:
-            self.name = "TYT"
-            
-            
-        self.rootContainer = Container(None, "Test")
-        self.set_root_item(self.rootContainer)
-        self.refresh = int(kwargs.get('refresh',60))*60
-        self.nextContainer = MediaContainer(id=1,parent_id=0, children_callback=["1", "2", "3"], name="tttt")
-        self.secondContainer = MediaContainer(id=2,parent_id=0, name="tttat", children_callback=["1", "2", "3"])
-        self.rootContainer.add_child(self.nextContainer, external_id=1)
+            self.name = "TYT"            
+        self.rootContainer = MediaContainer(parent_id=-1,
+                                            name="root",
+                                            store=self)
+        self.secondContainer = MediaContainer(store=self, parent_id=self.rootContainer.get_id(), name="tttat")
+        newItem = MediaItem(store=self, media=None, name="myname34", parent_id=self.secondContainer.get_id(), image=None)
+        
         self.rootContainer.add_child(self.secondContainer)
+        self.secondContainer.add_child(newItem)
+        self.new_item(self.rootContainer)
+        self.new_item(self.secondContainer)
+        self.new_item(newItem)
+        
         self.init_completed()
 
 #    def get_by_id(self, id):
 #        return self.rootContainer
-
-    
-    def retrieveAlbums(self, parent=None):
-        albums = []
-        albums = self.dbCursor.select("media",  single=False)
-        # albums.add(DBMedia("nameeee"))
-        return albums
     
     def upnp_init(self):
         self.current_connection_id = None
         if self.server:
             self.server.connection_manager_server.set_variable(0, 'SourceProtocolInfo',
-                        'http-get:*:image/jpeg:*,'
-                        'http-get:*:image/gif:*,'
-                        'http-get:*:image/png:*',
+                        ['internal:%s:video/mp4:*' % self.server.coherence.hostname,
+                        'http-get:*:video/mp4:*',
+                        'internal:%s:video/x-msvideo:*' % self.server.coherence.hostname,
+                        'http-get:*:video/x-msvideo:*',
+                        'internal:%s:video/mpeg:*' % self.server.coherence.hostname,
+                        'http-get:*:video/mpeg:*',
+                        'internal:%s:video/avi:*' % self.server.coherence.hostname,
+                        'http-get:*:video/avi:*',
+                        'internal:%s:video/divx:*' % self.server.coherence.hostname,
+                        'http-get:*:video/divx:*',
+                        'internal:%s:video/quicktime:*' % self.server.coherence.hostname,
+                        'http-get:*:video/quicktime:*',
+                        'internal:%s:image/png:*' % self.server.coherence.hostname,
+                        'http-get:*:image/png:*'],
                         default=True)
-           # self.server.content_directory_server.set_variable(0, 'SystemUpdateID', self.update_id)
+            self.server.content_directory_server.set_variable(0, 'SystemUpdateID', self.update_id)
     
-    def getNextID(self):
+    def getNextID(self, item):
         ret = self.next_id
+        #self.items[id] = item
         self.next_id += 1
         return ret
     
+    def new_item(self, item):
+        item_id = self.next_id
+        self.items[item_id] = item
+        self.next_id += 1
+        return item_id
+
+    
+    def get_by_id(self,id):
+        self.info("looking for id %r", id)
+        if '@' in id:
+            id = id.split('@')[0]
+        return self.items[int(id)]
+
+def tolist(obj):
+    """Return object as a list:
+     - if object is None, return the empty list
+     - if object is a single object (i.e.: not a list), return a list with a
+       single element being the given object
+     - otherwise, (i.e.: it is a list), return the object itself
+    """
+    if obj is None:
+        return []
+    elif isinstance(obj, list):
+        return obj
+    else:
+        return [ obj ]
+    
+class FakeCoherence:
+    hostname = 'fake'
+
+class FakeServer:
+    coherence = FakeCoherence()
+
+class FakeStore(BackendStore):
+    def __init__(self, urlbase=''):
+        self.urlbase = urlbase
+        self.items = {}
+        self.server = FakeServer()
+        self.last_int = 0
+      
+    def new_item(self, item):
+        id = self.last_int
+        self.items[id] = item
+        self.last_int += 1
+        return id
