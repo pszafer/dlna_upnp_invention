@@ -81,8 +81,8 @@ class MediaItem(BackendItem):
     def create_item(self):
         item = DIDLLite.ImageItem(self.id, self.parent_id, self.get_name())
 
-        external_url = '%s/%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
-        external_url = self.store.urlbase + str(self.id)
+        external_url = '%s%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
+        #external_url = self.store.urlbase + str(self.id)
         # add http resource
         filename = "/home/xps/Obrazy/320n.png"
         internal_url = 'file://' + filename
