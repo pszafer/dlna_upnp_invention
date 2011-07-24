@@ -34,6 +34,28 @@ def _natural_key(s):
     s = s.get_name().strip()
     return [ part.isdigit() and int(part) or part.lower() for part in NUMS.split(s) ]
 
+def create_thumbnail(filename):
+    import os, sys
+    import Image
+    
+    # Use "ffmpeg -i <videofile>" to get total length by parsing the error message
+    chout, chin, cherr = os.popen3("ffmpeg -i %s" % filename)
+    out = cherr.read()
+    dp = out.index("Duration: ")
+    duration = out[dp+10:dp+out[dp:].index(",")]
+    hh, mm, ss = map(float, duration.split(":"))
+    total = (hh*60 + mm)*60 + ss
+    
+    # Use "ffmpeg -i <videofile> -ss <start> frame<nn>.png" to extract 9 frames
+    for i in xrange(9):
+        t = (i + 1) * total / 10
+        os.system("ffmpeg -i %s -s 64x64 -ss %0.3fs frame%i.png" % (filename, t, i))
+    
+    # Make a full 3x3 image by pasting the snapshots
+    img = Image.open("frame%i.png" % (y*3+x))
+    return img
+    
+
 class MediaContainer(BackendItem):
     logType = 'dlna_upnp_MediaContainer'
     
@@ -111,7 +133,6 @@ class MediaItem(BackendItem):
         if mimetype == 'root':
                 self.location = unicode(path)
         self.image = image
-        
         self.cover = image
         
         self.url = urlbase + str(self.id)
