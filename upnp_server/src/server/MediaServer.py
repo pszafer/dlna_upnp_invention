@@ -5,6 +5,7 @@ Created on 08-07-2011
 '''
 import Database
 from server.Database import DBCursor, DBMedia
+from coherence.upnp.core import DIDLLite
 
 parameters = {
               'port' : 0,
@@ -12,7 +13,6 @@ parameters = {
               }
 
 from coherence import log
-import storm
 
 class MediaServer(log.Loggable):
     logType = 'dlna_upnp_MediaServer'
@@ -58,13 +58,9 @@ class MediaServer(log.Loggable):
     
     def create_MediaServer(self, coherence):
         from coherence.upnp.devices.media_server import MediaServer
+        #from fs_storage import FSStore as MediaStore
         from MediaStorage import MediaStore
-        kwargs = {
-                  'version' : 2,
-                  'no_thread_needed' : True,
-                  'db' : None,
-                  'plugin' : self,
-                  }
+        kwargs = {}
         kwargs['uuid'] = self.create_uuid()
         uuid = str(kwargs['uuid'])
         kwargs['uuid'] = uuid
@@ -73,6 +69,8 @@ class MediaServer(log.Loggable):
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
+        kwargs['content']="/home/xps/Wideo/test/"
+        kwargs['urlbase'] = coherence.hostname
         #kwargs['dbCursor'] = dbCursor
         
         server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
@@ -97,3 +95,27 @@ from twisted.internet import reactor
 mediaServer = MediaServer()
 reactor.callWhenRunning(mediaServer.run)
 reactor.run()
+
+#from coherence.extern.et import ET, ElementInterface
+#from coherence.upnp.core import DIDLLite
+#class Child(object):
+#    def __init__(self):
+#        self.anything = "test"
+#class Element(ElementInterface):
+#    def __init__(self):
+#        ElementInterface.__init__(self, 'DIDL-Lite', {})
+#        self.attrib['xmlns'] = 'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/'
+#        self.attrib['xmlns:dc'] = 'http://purl.org/dc/elements/1.1/'
+#        self.attrib['xmlns:upnp'] = 'urn:schemas-upnp-org:metadata-1-0/upnp/'
+#        self.attrib['xmlns:dlna'] = 'urn:schemas-dlna-org:metadata-1-0'
+#        self.attrib['xmlns:pv'] = 'http://www.pv.com/pvns/'
+#        self._items = []
+#        self._items.append("aaa")
+#        self._children = []
+#        #self._children.append(5)
+#
+#did = DIDLLite.VideoItem()
+##didd.addItem(did)
+#aaa = did.toString()
+#
+#print "t" + aaa

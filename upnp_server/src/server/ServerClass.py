@@ -32,7 +32,12 @@ class ServerClass(object):
         c.connect(self.check_device, 'Coherence.UPnP.Device.detection_completed')
         
 print "start"
-myClass =  ServerClass()
-reactor.callWhenRunning(ServerClass().start)
-reactor.run()
+#myClass =  ServerClass()
+#reactor.callWhenRunning(ServerClass().start)
+#reactor.run()
+header = {}
+header['user-agent'] = 'Microsoft-Windows/6.1 UPnP/1.0 Windows-Media-Player/12.0.7601.17514 DLNADOC/1.50 (MS-DeviceCaps/1024)'
+test = header['user-agent'].find('blee')
+print test
+
 print "stop"

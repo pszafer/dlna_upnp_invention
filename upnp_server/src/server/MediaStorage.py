@@ -6,7 +6,11 @@ Created on 09-07-2011
 
 import mimetypes
 from coherence.upnp.core import DIDLLite
+from coherence.upnp.core.DIDLLite import classChooser , Container, Resource
+import coherence.upnp.devices.media_server
 import os
+from sets import Set
+import re
 mimetypes.init()
 mimetypes.add_type('audio/x-m4a', '.m4a')
 mimetypes.add_type('audio/x-musepack', '.mpc')
@@ -15,20 +19,37 @@ mimetypes.add_type('video/mp4', '.mp4')
 mimetypes.add_type('video/mpegts', '.ts')
 mimetypes.add_type('video/divx', '.divx')
 mimetypes.add_type('video/divx', '.avi')
-mimetypes.add_type('video/x-matroska', '.mkv')
+mimetypes.add_type('video/ogg', '.ogv')
+#mimetypes.add_type('video/x-matroska', '.mkv')
+mimetypes.add_type('video/mkv', '.mkv')
 mimetypes.add_type('text/plain', '.srt')
 mimetypes.add_type('image/png', '.png')
 
 from coherence.backend import BackendItem, BackendStore
 
+## Sorting helpers
+NUMS = re.compile('([0-9]+)')
+def _natural_key(s):
+    # strip the spaces
+    s = s.get_name().strip()
+    return [ part.isdigit() and int(part) or part.lower() for part in NUMS.split(s) ]
+
 class MediaContainer(BackendItem):
     logType = 'dlna_upnp_MediaContainer'
     
-    def __init__(self, parent_id, name, store=None):
-        self.id = store.new_item(self)
+    def __init__(self, id, item, parent_id, name, store=None):
+        self.id = id
+        
         self.parent_id = parent_id
         self.name = name
-        self.mimetype = 'directory'
+        
+       # if mimetype == 'root':
+      #      self.location = unicode(path)
+        self.item = item(id, parent_id, name)
+        if isinstance(self.item, Container):
+            self.item.childCount = 0
+        #aaa  = self.item.toString()
+        #print aaa
         self.store = store
         self.children = []
         
@@ -54,9 +75,7 @@ class MediaContainer(BackendItem):
             return len(self.children)
 
     def get_item(self):
-        item = DIDLLite.Container(self.id, self.parent_id, self.name)
-        item.childCount = self.get_child_count()
-        return item
+        return self.item
 
     def get_name(self):
         return self.name
@@ -67,31 +86,91 @@ class MediaContainer(BackendItem):
 class MediaItem(BackendItem):   
     logCategory = 'smewt_media_store'
 
-    def __init__(self,  store, media, name, parent_id, image = None):
-        self.id = store.new_item(self)
-        self.store = store
-        self.media = media
-        self.name = name
-        self.image = image
-        self.cover = image
-        self.parent_id = parent_id
-        self.item = self.create_item()
-        self.caption = None
+    '''
+        item - defining type of item:
+            - Container,
+            - Item:
+                    - VideoItem
+                    - MusicItem
+                    - etc.
+    '''
+    def __init__(self, id, itemClass, path, hostname, urlbase, mimetype, name, parent, store=None, image = None):
+        self.id = id
         
+        self.store = store
+        self.mimetype = mimetype
+        self.parent = parent
+        if parent == None:
+            parent_id = -1
+            self.parent_id = parent_id
+        else:
+            parent_id = parent.get_id()
+            self.parent_id = parent_id
+            parent.add_child(self)
+        self.name = name
+        if mimetype == 'root':
+                self.location = unicode(path)
+        self.image = image
+        
+        self.cover = image
+        
+        self.url = urlbase + str(self.id)
+        
+        
+        self.item = itemClass(id, self.parent_id, self.name)
+        
+        self.child_count = 0
+        self.children = []
+        self.caption = None
+        self.location = path
+        
+        
+        
+        if mimetype in ['directory','root']:
+            self.get_url = lambda : self.url
+            self.get_path = lambda : None
+            self.update_id = 0
+            self.item = itemClass(id, self.parent_id, self.name)
+            if isinstance(self.item, Container):
+                self.item.childCount = 0
+           
+            self.mimetype = mimetype
+        else:
+            self.get_url = lambda : self.url
+            external_url = '%s%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
+            filename = path
+            self.location = filename
+            internal_url = 'file://' + filename
+            mimetype, _ = mimetypes.guess_type(filename, strict=False)
+            self.mimetype = mimetype
+            size = None
+            if os.path.isfile(filename):
+                size = os.path.getsize(filename)
+            if mimetype != 'item':
+                res = Resource(internal_url, 'internal:%s:%s:*' % (hostname, mimetype))
+                res.size = size
+                self.item.res.append(res)
+            #if mimetype != 'item':
+            res = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))
+            #else:
+            #res = Resource(external_url, 'http-get:*:*:*')
+            res.size = size
+            self.item.res.append(res)
+               
     def create_item(self):
-        item = DIDLLite.ImageItem(self.id, self.parent_id, self.get_name())
-
         external_url = '%s%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
         #external_url = self.store.urlbase + str(self.id)
         # add http resource
-        filename = "/home/xps/Obrazy/320n.png"
+        filename = "/home/xps/Wideo/test/Friends_S06_E20.avi"
         internal_url = 'file://' + filename
         mimetype, _ = mimetypes.guess_type(filename, strict=False)
+        item = classChooser(mimetype)
+        item = item(self.id, self.parent_id, self.get_name())
         size = None
         if os.path.isfile(filename):
             size = os.path.getsize(filename)
         
-        res = DIDLLite.Resource(internal_url, 'internal:%s:%s:*' % (self.store.server.coherence.hostname, mimetype,))
+        res = DIDLLite.Resource(internal_url, 'internal:%s:%s:*' % (self.store.server.coherence.hostname, mimetype))
         res.size = size
         item.res.append(res)
         
@@ -124,12 +203,26 @@ class MediaItem(BackendItem):
 #                    item.attachments = {}
 #                item.attachments[hash_from_path] = coherence_utils.StaticFile(self.image)
         return item
-        
-    def get_children(self,start=0, request_count=0):
-        return []
+    
+    def add_child(self, child):
+        self.children.append(child)
+        self.child_count += 1
+        if isinstance(self.item, Container):
+            self.item.childCount += 1
+        self.update_id += 1
+        self.sorted = False
+    
+    def get_children(self,start=0, end=0):
+        if self.sorted == False:
+            self.children.sort(key=_natural_key)
+            self.sorted = True
+        if end == 0:
+            return self.children[start:]
+        else:
+            return self.children[start:end]
         
     def get_child_count(self):
-        return len(self.get_children())
+        return self.child_count
   
     def get_item(self):
         return self.item
@@ -151,11 +244,11 @@ class MediaStore(BackendStore):
         BackendStore.__init__(self, server, **kwargs)
         self.next_id = 0
         self.warning("MediaStore init, what I got: %r", kwargs)
-        self.db = kwargs['db']
+        #self.db = kwargs['db']
         self.name = kwargs.get('name', 'Media')
         #self.dbCursor = kwargs['dbCursor']
         self.content = kwargs.get('content',None)
-        self.store = FakeStore()
+        self.store = {}
         if self.content != None:
             if(isinstance(self.content, basestring)):
                 self.content = [self.content]
@@ -163,9 +256,19 @@ class MediaStore(BackendStore):
             for i in self.content:
                 l += i.split(',')
             self.content = l
+        #self.content = Set([os.path.abspath(x) for x in self.content])
+        #ignore_patterns = kwargs.get('ignore_patterns',[])
+        
+        self.import_folder = kwargs.get('import_folder',None)
+        self.import_folder = "/home/xps/Wideo"
+        if self.import_folder != None:
+            self.import_folder = os.path.abspath(self.import_folder)
+            if not os.path.isdir(self.import_folder):
+                self.import_folder = None
+        
         self.items = {}
         self.ids = {}
-        self.plugin = kwargs['plugin']
+        #self.plugin = kwargs['plugin']
         self.urlbase = kwargs.get('urlbase','')
         if( len(self.urlbase) > 0 and self.urlbase[len(self.urlbase)-1] != '/'):
             self.urlbase += '/'
@@ -173,19 +276,56 @@ class MediaStore(BackendStore):
         try:
             self.name = kwargs['name']
         except KeyError:
-            self.name = "TYT"            
-        self.rootContainer = MediaContainer(parent_id=-1,
-                                            name="root",
-                                            store=self)
-        self.secondContainer = MediaContainer(store=self, parent_id=self.rootContainer.get_id(), name="tttat")
-        newItem = MediaItem(store=self, media=None, name="myname34", parent_id=self.secondContainer.get_id(), image=None)
-        
-        self.rootContainer.add_child(self.secondContainer)
-        self.secondContainer.add_child(newItem)
-        self.new_item(self.rootContainer)
-        self.new_item(self.secondContainer)
-        self.new_item(newItem)
-        
+            self.name = "TYT"
+        parent = None
+        id = self.getNextID()
+        itemClass=classChooser("root")
+        self.store[id] = rootC = parent = MediaItem(
+                                       id = id, 
+                                       parent = parent,
+                                       path="/home/xps/Wideo/test",
+                                       name = 'test',
+                                       mimetype="directory",
+                                       store=self,
+                                       hostname = self.server.coherence.hostname,
+                                       urlbase = self.urlbase,
+                                       itemClass=itemClass)
+        self.update_id += 1
+        id = self.getNextID()  
+        self.store[id] = parent = MediaItem(
+                                         id = id,
+                                         parent = parent, 
+                                         name = 'test2',
+                                         mimetype='directory',
+                                         path="/home/xps/Wideo/test/test2",
+                                         store=self,
+                                         urlbase = self.urlbase,
+                                         hostname = self.server.coherence.hostname,
+                                         itemClass=itemClass)
+        self.update_id += 1
+        id = self.getNextID()  
+        self.store[id] = you = MediaItem(
+                                         id = id,
+                                         parent = parent, 
+                                         name = 'friends.avi',
+                                         path = "/home/xps/Wideo/test/test2/Friends_S06_E20.avi",
+                                         mimetype='video/divx',
+                                         store=self,
+                                         urlbase = self.urlbase,
+                                         hostname = self.server.coherence.hostname,
+                                         itemClass=classChooser("video/divx"))
+        self.update_id += 1
+        #rootC.add_child(you)
+        #newItem = MediaItem(id = self.getNextID(), store=self, media=None, name="myname34.avi", parent_id=self.rootContainer.get_id(), image=None)
+        #self.secondContainer.add_child(newItem)
+        #self.new_item(self.secondContainer)
+        #self.add_item(newItem)
+        #print self.rootContainer.toString()
+        self.wmc_mapping.update({'14': '0',
+                                 '15': '0',
+                                 '16': '0',
+                                 '17': '0'
+                                })
         self.init_completed()
 
 #    def get_by_id(self, id):
@@ -211,25 +351,25 @@ class MediaStore(BackendStore):
                         'http-get:*:image/png:*'],
                         default=True)
             self.server.content_directory_server.set_variable(0, 'SystemUpdateID', self.update_id)
-    
-    def getNextID(self, item):
+                
+    def getNextID(self):
         ret = self.next_id
-        #self.items[id] = item
         self.next_id += 1
         return ret
     
-    def new_item(self, item):
-        item_id = self.next_id
-        self.items[item_id] = item
-        self.next_id += 1
-        return item_id
+    def getCurrentID(self):
+        return self.next_id
+    
+    def add_item(self, item):
+        self.store[item.get_id()] = item
 
     
     def get_by_id(self,id):
         self.info("looking for id %r", id)
-        if '@' in id:
-            id = id.split('@')[0]
-        return self.items[int(id)]
+        if isinstance(id, basestring):
+            id = id.split('@',1)
+            id = id[0]
+        return self.store[int(id)]
 
 def tolist(obj):
     """Return object as a list:
@@ -244,22 +384,3 @@ def tolist(obj):
         return obj
     else:
         return [ obj ]
-    
-class FakeCoherence:
-    hostname = 'fake'
-
-class FakeServer:
-    coherence = FakeCoherence()
-
-class FakeStore(BackendStore):
-    def __init__(self, urlbase=''):
-        self.urlbase = urlbase
-        self.items = {}
-        self.server = FakeServer()
-        self.last_int = 0
-      
-    def new_item(self, item):
-        id = self.last_int
-        self.items[id] = item
-        self.last_int += 1
-        return id
