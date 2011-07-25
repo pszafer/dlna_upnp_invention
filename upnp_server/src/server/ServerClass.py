@@ -40,4 +40,10 @@ header['user-agent'] = 'Microsoft-Windows/6.1 UPnP/1.0 Windows-Media-Player/12.0
 test = header['user-agent'].find('blee')
 print test
 
+filename = "file:///home/xps/Wideo/test/test2/Friends_S06_E20.avi"
+filename = "/home/xps/.thumbnails/normal/f1d2e7cf33db9de55a6fe49b91a63b1b.png"
+
+hash_from_path = str(id(filename))
+print hash_from_path
+
 print "stop"

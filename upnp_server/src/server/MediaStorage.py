@@ -8,6 +8,9 @@ import mimetypes
 from coherence.upnp.core import DIDLLite
 from coherence.upnp.core.DIDLLite import classChooser , Container, Resource
 import coherence.upnp.devices.media_server
+from coherence.upnp.core.DIDLLite import simple_dlna_tags
+from coherence.upnp.core import utils
+
 import os
 from sets import Set
 import re
@@ -34,6 +37,18 @@ def _natural_key(s):
     s = s.get_name().strip()
     return [ part.isdigit() and int(part) or part.lower() for part in NUMS.split(s) ]
 
+def _find_thumbnail(filename,thumbnail_folder='.thumbs'):
+    """ looks for a thumbnail file of the same basename
+        in a folder named '.thumbs' relative to the file
+
+        returns the filename of the thumb, its mimetype and the correspondig DLNA PN string
+        or throws an Exception otherwise
+    """
+    f = filename
+    mimetype,_ = mimetypes.guess_type(f, strict=False)
+    dlna_pn = 'DLNA.ORG_PN=PNG_TN'
+    return os.path.abspath(f),mimetype,dlna_pn
+
 def create_thumbnail(filename):
     import os, sys
     import Image
@@ -47,14 +62,21 @@ def create_thumbnail(filename):
     total = (hh*60 + mm)*60 + ss
     
     # Use "ffmpeg -i <videofile> -ss <start> frame<nn>.png" to extract 9 frames
-    for i in xrange(9):
-        t = (i + 1) * total / 10
-        os.system("ffmpeg -i %s -s 64x64 -ss %0.3fs frame%i.png" % (filename, t, i))
+    i = 1
+    t = 2
+    os.system("ffmpeg -i %s -s 64x64 -ss %0.3fs frame%i.png" % (filename, t, i))
     
     # Make a full 3x3 image by pasting the snapshots
-    img = Image.open("frame%i.png" % (y*3+x))
-    return img
+    img = Image.open("frame%i.png" % (i))
+
+def import_thumbnail(filename):
+    import md5
+    m = md5.new()
+    m.update(filename)
+    hash = m.hexdigest()
     
+    path = "/home/xps/.thumbnails/normal/"+hash+".png"
+    return path
 
 class MediaContainer(BackendItem):
     logType = 'dlna_upnp_MediaContainer'
@@ -65,8 +87,6 @@ class MediaContainer(BackendItem):
         self.parent_id = parent_id
         self.name = name
         
-       # if mimetype == 'root':
-      #      self.location = unicode(path)
         self.item = item(id, parent_id, name)
         if isinstance(self.item, Container):
             self.item.childCount = 0
@@ -116,8 +136,8 @@ class MediaItem(BackendItem):
                     - MusicItem
                     - etc.
     '''
-    def __init__(self, id, itemClass, path, hostname, urlbase, mimetype, name, parent, store=None, image = None):
-        self.id = id
+    def __init__(self, object_id, itemClass, path, hostname, urlbase, mimetype, name, parent, store=None, image = None):
+        self.id = int(object_id)
         
         self.store = store
         self.mimetype = mimetype
@@ -135,10 +155,11 @@ class MediaItem(BackendItem):
         self.image = image
         self.cover = image
         
+                
         self.url = urlbase + str(self.id)
         
         
-        self.item = itemClass(id, self.parent_id, self.name)
+        self.item = itemClass(object_id, self.parent_id, self.name)
         
         self.child_count = 0
         self.children = []
@@ -151,7 +172,7 @@ class MediaItem(BackendItem):
             self.get_url = lambda : self.url
             self.get_path = lambda : None
             self.update_id = 0
-            self.item = itemClass(id, self.parent_id, self.name)
+            self.item = itemClass(self.id, self.parent_id, self.name)
             if isinstance(self.item, Container):
                 self.item.childCount = 0
            
@@ -177,53 +198,26 @@ class MediaItem(BackendItem):
             #res = Resource(external_url, 'http-get:*:*:*')
             res.size = size
             self.item.res.append(res)
-               
-    def create_item(self):
-        external_url = '%s%d@%d' % (self.store.urlbase, self.id, self.parent_id,)
-        #external_url = self.store.urlbase + str(self.id)
-        # add http resource
-        filename = "/home/xps/Wideo/test/Friends_S06_E20.avi"
-        internal_url = 'file://' + filename
-        mimetype, _ = mimetypes.guess_type(filename, strict=False)
-        item = classChooser(mimetype)
-        item = item(self.id, self.parent_id, self.get_name())
-        size = None
-        if os.path.isfile(filename):
-            size = os.path.getsize(filename)
-        
-        res = DIDLLite.Resource(internal_url, 'internal:%s:%s:*' % (self.store.server.coherence.hostname, mimetype))
-        res.size = size
-        item.res.append(res)
-        
-        res = DIDLLite.Resource(external_url, 'http-get:*:%s:*' % (mimetype,))
-        res.size = size
-        #res.
-        item.res.append(res)
-        self.location = filename
-    
-#        if self.image and os.path.isfile(self.image):
-#            mimetype,_ = mimetypes.guess_type(self.image, strict=False)
-#            if mimetype in ('image/jpeg','image/png'):
-#                if mimetype == 'image/jpeg':
-#                    dlna_pn = 'DLNA.ORG_PN=JPEG_TN'
-#                else:
-#                    dlna_pn = 'DLNA.ORG_PN=PNG_TN'
-#
-#                dlna_tags = simple_dlna_tags[:]
-#                dlna_tags[3] = 'DLNA.ORG_FLAGS=00f00000000000000000000000000000'
-#                
-#                hash_from_path = str(id(self.image))
-#                _, ext = os.path.splitext(self.image)
-#                item.albumArtURI = ''.join((external_url,'?cover',ext))
-#
-#                new_res = DIDLLite.Resource(external_url+'?attachment='+hash_from_path,
-#                                            'http-get:*:%s:%s' % (mimetype, ';'.join([dlna_pn]+dlna_tags)))
-#                new_res.size = os.path.getsize(self.image)
-#                item.res.append(new_res)
-#                if not hasattr(item, 'attachments'):
-#                    item.attachments = {}
-#                item.attachments[hash_from_path] = coherence_utils.StaticFile(self.image)
-        return item
+        if path == "/home/xps/Wideo/test/test2/Friends_S06_E20.avi":
+            filename,mimetype,dlna_pn = _find_thumbnail(image)
+            
+            dlna_tags = simple_dlna_tags[:]
+            dlna_tags[3] = 'DLNA.ORG_FLAGS=00f00000000000000000000000000000'
+            print filename
+            filename = "/home/xps/.thumbnails/normal/f1d2e7cf33db9de55a6fe49b91a63b1b.png"
+            try:
+                test = id(filename)
+                hash_from_path = str(test)
+                print hash_from_path
+                new_res = Resource(self.url+'?attachment='+hash_from_path,
+                    'http-get:*:%s:%s' % (mimetype, ';'.join([dlna_pn]+dlna_tags)))
+                new_res.size = os.path.getsize(filename)
+                self.item.res.append(new_res)
+                if not hasattr(self.item, 'attachments'):
+                    self.item.attachments = {}
+                self.item.attachments[hash_from_path] = utils.StaticFile(filename)
+            except Exception as inst:
+                print inst
     
     def add_child(self, child):
         self.children.append(child)
@@ -302,7 +296,7 @@ class MediaStore(BackendStore):
         id = self.getNextID()
         itemClass=classChooser("root")
         self.store[id] = rootC = parent = MediaItem(
-                                       id = id, 
+                                       object_id = id, 
                                        parent = parent,
                                        path="/home/xps/Wideo/test",
                                        name = 'test',
@@ -314,7 +308,7 @@ class MediaStore(BackendStore):
         self.update_id += 1
         id = self.getNextID()  
         self.store[id] = parent = MediaItem(
-                                         id = id,
+                                         object_id = id,
                                          parent = parent, 
                                          name = 'test2',
                                          mimetype='directory',
@@ -326,7 +320,7 @@ class MediaStore(BackendStore):
         self.update_id += 1
         id = self.getNextID()  
         self.store[id] = you = MediaItem(
-                                         id = id,
+                                         object_id = id,
                                          parent = parent, 
                                          name = 'friends.avi',
                                          path = "/home/xps/Wideo/test/test2/Friends_S06_E20.avi",
@@ -334,7 +328,8 @@ class MediaStore(BackendStore):
                                          store=self,
                                          urlbase = self.urlbase,
                                          hostname = self.server.coherence.hostname,
-                                         itemClass=classChooser("video/divx"))
+                                         itemClass=classChooser("video/divx"),
+                                         image = import_thumbnail("file:///home/xps/Wideo/test/test2/Friends_S06_E20.avi"))
         self.update_id += 1
         #rootC.add_child(you)
         #newItem = MediaItem(id = self.getNextID(), store=self, media=None, name="myname34.avi", parent_id=self.rootContainer.get_id(), image=None)
@@ -376,21 +371,21 @@ class MediaStore(BackendStore):
     def getNextID(self):
         ret = self.next_id
         self.next_id += 1
-        return ret
+        return str(ret)
     
     def getCurrentID(self):
         return self.next_id
     
     def add_item(self, item):
-        self.store[item.get_id()] = item
+        self.store[str(item.get_id())] = item
 
     
-    def get_by_id(self,id):
-        self.info("looking for id %r", id)
-        if isinstance(id, basestring):
-            id = id.split('@',1)
-            id = id[0]
-        return self.store[int(id)]
+    def get_by_id(self,object_id):
+        self.info("looking for id %r", object_id)
+        if isinstance(object_id, basestring):
+            object_id = object_id.split('@',1)
+            object_id = object_id[0]
+        return self.store[object_id]
 
 def tolist(obj):
     """Return object as a list:
