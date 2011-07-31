@@ -126,6 +126,11 @@ class MediaItem(BackendItem):
                     self.item.res.append(res1)                                                   #add resource to item
                 
     def add_child(self, child):
+        '''
+        Add child for container
+        Can't be used with mimetypes != directory
+        @param child:    MediaItem class with this child
+        '''
         self.children.append(child)
         self.child_count += 1
         if isinstance(self.item, Container):
@@ -134,6 +139,11 @@ class MediaItem(BackendItem):
         self.sorted = False
     
     def get_children(self,start=0, end=0):
+        '''
+        Get children list
+        @param start:    start index of children to return
+        @param end:      end index of children to return
+        '''
         if self.sorted == False:
             self.children.sort(key=helpers._natural_key)
             self.sorted = True
@@ -143,27 +153,49 @@ class MediaItem(BackendItem):
             return self.children[start:end]
         
     def get_child_count(self):
+        '''
+        Get number of children this container has
+        '''
         return self.child_count
   
     def get_item(self):
+        '''
+        Get item
+        '''
         return self.item
 
     def get_id(self):
+        '''
+        Get id of item
+        '''
         return self.id
 
     def get_name(self):
+        '''
+        Get name of item
+        '''
         return self.name
 
     def get_cover(self):
+        '''
+        Get cover of item
+        Used also with video and images
+        '''
         return self.cover
     
     def get_path(self):
+        '''
+        Get real path of file
+        '''
         if isinstance( self.location,FilePath):
             return self.location.path
         else:
             self.location
     
     def get_mimetype(self):
+        '''
+        Get mimetype of item
+        '''
         return self.mimetype
     
     def set_path(self,path=None,extension=None):
@@ -178,6 +210,14 @@ class MediaItem(BackendItem):
             self.location = path
             
     def create_VideoItem(self, res, size, external_url, mimetype, path):
+        '''
+        Create resource with videoItem and profiled metadata of video file
+        @param res:             input internal resource
+        @param size:            size of file
+        @param external_url:    external url
+        @param mimetype:        mimetype
+        @param path:            path to file (not URI)
+        '''
         metadata = helpers.getFileMetadata(path)                                    #get file metadata like duration, bitrate using ffprobe
         #dlna_tags = "DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0"                      #don't needed????
         res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
@@ -189,6 +229,14 @@ class MediaItem(BackendItem):
         return res, res1
     
     def create_AudioItem(self, res, size, external_url, mimetype, path):
+        '''
+        Create resource with audioItem and profiled metadata of audio file
+        @param res:             input internal resource
+        @param size:            size of file
+        @param external_url:    external url
+        @param mimetype:        mimetype
+        @param path:            path to file (not URI)
+        '''
         from mutagen.mp3 import MP3
         audio = MP3(path)
         res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
@@ -198,6 +246,14 @@ class MediaItem(BackendItem):
         return res, res1
     
     def create_ImageItem(self, res, size, external_url, mimetype, path):
+        '''
+        Create resource with imageItem and profiled metadata of image file
+        @param res:             input internal resource
+        @param size:            size of file
+        @param external_url:    external url
+        @param mimetype:        mimetype
+        @param path:            path to file (not URI)
+        '''
         #dlna_tags = "DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0"                      #don't needed????
         res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
         res.size = res1.size = size
@@ -213,6 +269,12 @@ class MediaItem(BackendItem):
         return res, res1
     
     def createThumbnails(self, path, urlbase):
+        '''
+        create thumbnail
+        now working only with importing nautilus thumbnails
+        @param path:        path to file we want to get thumbnail
+        @param urlbase:     urlbase of file to create thumbnail uri
+        '''
         try:
             thumbnail_path,_,_ = helpers._find_thumbnail(helpers.import_thumbnail("file://"+path))     #get thumbnail path from gnome ~/.thumbnails
             #hash_from_path = str(test)
@@ -271,14 +333,6 @@ class MediaStore(BackendStore):
         self.createContainer("Video", parent = self.store[str(0)], path="Video", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.update_id += 1
         self.searchInContentPath(self.content)                              #recurency search
-                
-        
-        
-#        self.update_id += 1
-        
-        #for item in self.store.values():
-            #if 'Friends' in str(item.get_name()) and item.get_id() != you.get_id():
-            #    you.add_child(item)
                 
         if self.do_mimetypes_containers:
             mimetypes_root_created = False
