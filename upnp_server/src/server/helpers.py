@@ -15,6 +15,8 @@ mimetypes.add_type('audio/x-m4a', '.m4a')
 mimetypes.add_type('audio/mpeg', '.mp3')
 mimetypes.add_type('audio/x-musepack', '.mpc')
 mimetypes.add_type('audio/x-wavpack', '.wv')
+mimetypes.add_type('audio/x-wav', '.wav')
+
 mimetypes.add_type('video/mp4', '.mp4')
 mimetypes.add_type('video/mpegts', '.ts')
 mimetypes.add_type('video/avi', '.divx')
@@ -31,8 +33,11 @@ mimetypes.add_type('image/jpeg', '.jpg')
 NUMS = re.compile('([0-9]+)')
 def _natural_key(s):
     # strip the spaces
-    s = s.get_name().strip()
-    return [ part.isdigit() and int(part) or part.lower() for part in NUMS.split(s) ]
+    try:
+        s = s.get_name().strip()
+        return [ part.isdigit() and int(part) or part.lower() for part in NUMS.split(s) ]
+    except Exception, e:
+        print e
 
 def _find_thumbnail(filename,thumbnail_folder='.thumbs'):
     """ looks for a thumbnail file of the same basename

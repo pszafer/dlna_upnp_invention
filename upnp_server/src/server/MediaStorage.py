@@ -22,6 +22,7 @@ import datetime
 from coherence.backend import BackendItem, BackendStore
 from coherence.upnp.devices import media_server
 import re
+from aifc import Error
 
 media_server.COVER_REQUEST_INDICATOR = re.compile("(.*?cover\.[A-Z\a-z]{3,4}(&WMHME=1)?)$")         #special patch to work thumbnails with WMP12 
 
@@ -42,7 +43,8 @@ class MediaItem(BackendItem):
                  mimetype, 
                  parent, 
                  store=None, 
-                 image = None):
+                 image = None,
+                 add_child=True):
         '''
         Iniatilaze class for object
         
@@ -70,8 +72,9 @@ class MediaItem(BackendItem):
         else:
             parent_id = parent.get_id()
             self.parent_id = parent_id
-            parent.add_child(self)
-        
+            if add_child:
+                parent.add_child(self)
+            
         if path != None:
             self.name = os.path.basename(path)
             if mimetype == 'root':
@@ -138,6 +141,31 @@ class MediaItem(BackendItem):
         self.update_id += 1
         self.sorted = False
     
+    
+    
+    def add_children(self, children):
+        '''
+        Add child for container
+        Can't be used with mimetypes != directory
+        @param child:    MediaItem class with this child
+        '''
+        self.children = children
+        self.child_count = len(children)
+        if isinstance(self.item, Container):
+            self.item.childCount = len(children)
+        self.update_id += len(children)
+        self.sorted = False
+    
+    def remove_children(self, start=-1, end=-1):
+        for i in range(end, start,-1):
+            if i < len(self.children):
+                self.children.pop(i)
+        self.child_count = len(self.children)
+            
+    def add_parent(self, parent, parent_id):
+        self.parent = parent
+        self.parent_id = parent_id        
+    
     def get_children(self,start=0, end=0):
         '''
         Get children list
@@ -198,6 +226,9 @@ class MediaItem(BackendItem):
         '''
         return self.mimetype
     
+    def get_parent_id(self):
+        return self.parent_id
+    
     def set_path(self,path=None,extension=None):
         if path is None:
             path = self.get_path()
@@ -237,12 +268,21 @@ class MediaItem(BackendItem):
         @param mimetype:        mimetype
         @param path:            path to file (not URI)
         '''
-        from mutagen.mp3 import MP3
-        audio = MP3(path)
         res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
+        duration = None
+        bitrate = None
+        if 'mpeg' in mimetype:
+            from mutagen.mp3 import MP3
+            audio = MP3(path)
+            duration = helpers.s2hms(audio.info.length)
+            bitrate = audio.info.bitrate
+        if 'x-wav' in mimetype:
+            import wave
+            wfile = wave.open (path, "r")
+            duration = helpers.s2hms((1.0 * wfile.getnframes ()) / wfile.getframerate ())
         res.size = res1.size = size
-        res.duration = res1.duration = helpers.s2hms(audio.info.length)
-        res.bitrate = res1.bitrate = audio.info.bitrate
+        res.duration = res1.duration = duration 
+        res.bitrate = res1.bitrate = bitrate 
         return res, res1
     
     def create_ImageItem(self, res, size, external_url, mimetype, path):
@@ -316,7 +356,8 @@ class MediaStore(BackendStore):
             self.import_folder = os.path.abspath(self.import_folder)
             if not os.path.isdir(self.import_folder):
                 self.import_folder = None
-        self.do_mimetypes_containers = kwargs.get('do_mimetype_container', True)
+        self.do_mimetypes_containers = kwargs.get('do_mimetype_container', False)
+        self.max_child_items = kwargs.get('max_child_items', 10)
         self.hostname = self.server.coherence.hostname
         self.urlbase = kwargs.get('urlbase','')
         if( len(self.urlbase) > 0 and self.urlbase[len(self.urlbase)-1] != '/'):
@@ -327,23 +368,26 @@ class MediaStore(BackendStore):
         except KeyError:
             self.name = "TYT"
         self.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
-        self.createContainer("directories",  parent = self.store[str(0)], path="directories", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+        self.createContainer("directories",  parent = self.store[str(0)], path="Directories", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.createContainer("Image", parent = self.store[str(0)], path="Image", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.createContainer("Audio", parent = self.store[str(0)], path="Audio", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.createContainer("Video", parent = self.store[str(0)], path="Video", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.update_id += 1
         self.searchInContentPath(self.content)                              #recurency search
-                
+            
+        
+        
         if self.do_mimetypes_containers:
             mimetypes_root_created = False
             mimetypes_containers = {}
             for item in self.store.values():
                 itemmimetype = item.get_mimetype()
+                mimetype_id = -2
                 if itemmimetype not in ['directory','root']: 
                     if itemmimetype not in mimetypes_containers.keys():
                         id = self.getNextID()
                         if not mimetypes_root_created:
-                            self.createContainer(
+                            mimetype_id = self.createContainer(
                                                  "mimetypes", 
                                                  parent = self.store[str(0)], 
                                                  path="Mimetypes", 
@@ -362,14 +406,72 @@ class MediaStore(BackendStore):
                                              itemClass=classChooser("directory"),
                                              mimetype_container = True)
                     self.store[str(mimetypes_containers[itemmimetype])].add_child(item)
-                
-#        self.update_id += 1
-        #rootC.add_child(you)
-        #newItem = MediaItem(id = self.getNextID(), store=self, media=None, name="myname34.avi", parent_id=self.rootContainer.get_id(), image=None)
-        #self.secondContainer.add_child(newItem)
-        #self.new_item(self.secondContainer)
-        #self.add_item(newItem)
-        #print self.rootContainer.toString()
+        #divide elements if too many childs
+        try:
+            for container in self.containers_map.values():
+                if container == '3':
+                    if container not in mimetypes_containers.values():
+                        pass
+                    test = str(self.containers_map['mimetypes'])
+                    if container is not test:
+                        pass
+                if ((container != str(0)) and 
+                (container not in mimetypes_containers.values()) and 
+                (container is not str(self.containers_map['mimetypes']))):
+                    child_count = self.store[container].get_child_count() 
+                    new_cont_id = -2
+                    if child_count > self.max_child_items:
+                        iterator = 1
+                        number_of_container = (child_count/self.max_child_items + 1)              #number of containers to make to have divided children in equal containers
+                        items_in_container = (child_count + number_of_container // 2) // number_of_container
+                        left_items = child_count
+                        new_store_children_only = {}
+                        new_children_container = []
+                        old_path = self.store[container].get_path()
+                        for i in range(number_of_container):
+                            path = old_path
+                            if path is None:
+                                path = str(iterator)
+                            else:
+                                path += str(iterator)
+                            name = self.store[container].get_name()
+                            if name is None:
+                                name = str(iterator)
+                            else:
+                                name += str(iterator)
+                            new_cont_id = self.createContainer(
+                                                 name =  name,
+                                                 parent = self.store[container], 
+                                                 path = path,
+                                                 mimetype = 'directory', 
+                                                 urlbase = self.urlbase, 
+                                                 hostname = self.hostname, 
+                                                 itemClass = classChooser('directory'),
+                                                 add_child=False)
+                            new_children_container.append(new_cont_id)
+                            new_store_children_only[new_cont_id] = self.store[container].get_children(start=0, end=items_in_container)
+                            self.store[container].remove_children(start=-1, end=items_in_container-1)
+                            left_items -= items_in_container
+                            if left_items < 10 and child_count == 286:
+                                pass
+                            iterator += 1
+                        if left_items > 0:
+                            children_left = self.store[container].get_children()
+                            children_already_got = new_store_children_only[new_cont_id]
+                            children_already_got += children_left
+                            new_store_children_only[new_cont_id] = children_already_got
+                            self.store[container].remove_children(start=0, end=left_items)
+                        
+                        for i in new_store_children_only:
+                            id = self.store[i].get_parent_id()
+                            self.store[str(id)].add_child(self.store[i])
+                            self.store[i].add_children(new_store_children_only[i])
+                        
+                            #co jezeli w grupie children jest 
+                            #change parent of item
+                            #add children ommitting new containers
+        except Exception, e:
+            print e
         self.wmc_mapping.update({'14': '0',
                                  '15': '0',
                                  '16': '0',
@@ -380,7 +482,7 @@ class MediaStore(BackendStore):
 #    def get_by_id(self, id):
 #        return self.rootContainer
     
-    def createContainer(self, name, parent, path, mimetype, urlbase, hostname, itemClass, mimetype_container = False):
+    def createContainer(self, name, parent, path, mimetype, urlbase, hostname, itemClass, mimetype_container = False, add_child=True):
         id = self.getNextID()  
         self.store[id] = MediaItem(
                                          object_id = id,
@@ -390,11 +492,11 @@ class MediaStore(BackendStore):
                                          store=self,
                                          urlbase = self.urlbase,
                                          hostname = self.server.coherence.hostname,
-                                         itemClass = itemClass)
+                                         itemClass = itemClass,
+                                         add_child=add_child)
         if not mimetype_container:
             self.containers_map[name] = id
-        else:
-            return id
+        return id
     
     def upnp_init(self):
         self.current_connection_id = None
@@ -419,6 +521,8 @@ class MediaStore(BackendStore):
                 
     def getNextID(self):
         ret = self.next_id
+        if(ret == 315):
+            pass
         self.next_id += 1
         return str(ret)
     
@@ -484,14 +588,11 @@ class MediaStore(BackendStore):
         itemClass = classChooser(mimetype)
         if itemClass == None:
             return None
-        object_id = self.getNextID()
-        if mimetype not in ('root', 'directory'):                               #id will be no id + 
-            _,ext =  os.path.splitext(path)
-            object_id = str(object_id) + ext.lower()
-        else:
-            object_id = str(object_id)
         
-        self.store[object_id] = MediaItem(object_id=object_id,
+        if mimetype not in ('root', 'directory'):                               #id will be no id +
+            _,ext =  os.path.splitext(path)
+            object_id = str(self.getNextID()) + ext.lower()
+            self.store[object_id] = MediaItem(object_id=object_id,
                                           itemClass=itemClass,
                                           path=path,
                                           parent=parent,
@@ -499,6 +600,15 @@ class MediaStore(BackendStore):
                                           hostname = self.hostname,
                                           mimetype=mimetype,
                                           store=self)
+        else:
+            object_id = self.createContainer(
+                                 name = os.path.abspath(path), 
+                                 parent = parent, 
+                                 path = path, 
+                                 mimetype = mimetype, 
+                                 urlbase = self.urlbase, 
+                                 hostname = self.hostname, 
+                                 itemClass = itemClass)
         if 'video' in mimetype:
             self.store[str(self.containers_map['Video'])].add_child(self.store[object_id])
         elif 'audio' in mimetype:

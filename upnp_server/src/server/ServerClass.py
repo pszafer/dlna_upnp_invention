@@ -75,15 +75,28 @@ def create_thumbnail_via_gnome(uri):
 #Duration: 00:21:55.64, start: 0.000000, bitrate: 1485 kb/s
 #    print "test"
 
-import Image
-im = Image.open("/home/xps/Obrazy/toyota_public/toyota_1.jpg")
-print im.size
-int = "aaa"
-b= None
-for i in im.size:
-    b += str(i)+"x"
-b = b[:len(b)-1]
-print b
+#import Image
+#im = Image.open("/home/xps/Obrazy/toyota_public/toyota_1.jpg")
+#print im.size
+#int = "aaa"
+#b= None
+#for i in im.size:
+#    b += str(i)+"x"
+#b = b[:len(b)-1]
+#print b
+a = [66.25, 333, 335, 1, 1234.5]
+
+
+print a
+print a[:2]
+
+for i in range(0, 2):
+    print a[i]
+#liczba = round(286/72,4)
+#
+#liczba = (286 + 72 // 2) // 72
+#print liczba
+#print round(liczba,0)
 
 #dur = str(getFileMetadata("/home/xps/Wideo/test/test2/Friends_S06_E20.avi"))
 #ind = dur.index(', start')

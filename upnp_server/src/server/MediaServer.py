@@ -70,10 +70,12 @@ class MediaServer(log.Loggable):
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
-        content = ["/home/xps/Wideo/test/", "/home/xps/Obrazy/toyota_public", "/home/xps/Muzyka/mp3"]
+        content = ["/home/xps/Wideo/test/", "/home/xps/Obrazy/majowka2011/connect", "/home/xps/Muzyka/mp3"]
         kwargs['content']= content
         kwargs['urlbase'] = coherence.hostname
         kwargs['transcoding'] = 'no'
+        kwargs['do_mimetype_container'] =  True
+        kwargs['max_child_items'] = 4
         #kwargs['dbCursor'] = dbCursor
         
         server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
