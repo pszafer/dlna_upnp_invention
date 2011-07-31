@@ -46,6 +46,7 @@ class MediaServer(log.Loggable):
                             'logmode' : 'info',
                             'controlpoint' : 'yes',
                             'plugins' : {},
+                            'transcoding' : 'yes',
                             }
         serverport = parameters.get("port")
         if serverport:
@@ -69,8 +70,10 @@ class MediaServer(log.Loggable):
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
-        kwargs['content']="/home/xps/Wideo/test/"
+        content = ["/home/xps/Wideo/test/", "/home/xps/Obrazy/toyota_public", "/home/xps/Muzyka/mp3"]
+        kwargs['content']= content
         kwargs['urlbase'] = coherence.hostname
+        kwargs['transcoding'] = 'no'
         #kwargs['dbCursor'] = dbCursor
         
         server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
