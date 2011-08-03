@@ -92,6 +92,18 @@ print a[:2]
 
 for i in range(0, 2):
     print a[i]
+itemmimetype = "x-mkv"
+itemmimetype = "avi"
+print itemmimetype.replace("x-", "")
+
+zara = {}
+
+zara['test'] = "aaa"
+zara['test2'] = "bbb"
+
+for i in zara:
+    print i[0]
+    print i[1]
 #liczba = round(286/72,4)
 #
 #liczba = (286 + 72 // 2) // 72
