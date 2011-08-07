@@ -5,8 +5,8 @@ Created on 09-07-2011
 '''
 
 
-from coherence.upnp.core.DIDLLite import classChooser , Container, Resource
-
+from coherence.upnp.core.DIDLLite import classChooser , Container, Resource, VideoItem, Item
+from coherence.extern.et import ET
 
 import os
 from sets import Set
@@ -42,7 +42,7 @@ class MediaItem(BackendItem):
     logCategory = 'smewt_media_store'
     '''MediaItem is one class containing item, such as:
             - Container -- folder
-            - VideoItem -- video file
+            - VideoItem -- Video file
             - MusicItem -- music file
             - ImageItem -- image
     '''
@@ -78,6 +78,7 @@ class MediaItem(BackendItem):
         self.mimetype = mimetype
         self.parent = parent
         self.otherparents = []
+        self.hostname = hostname
         self.sorted = False
         if parent == None:
             parent_id = -1
@@ -101,7 +102,8 @@ class MediaItem(BackendItem):
             return
         self.image = image                                              #thumbnail path
         self.cover = image                                              #thumbnail path
-        self.url = urlbase + str(self.id)                               #create url to this item
+        url = urlbase + str(self.id)                               #create url to this item
+        self.u = url
         self.item = itemClass(object_id, self.parent_id, self.name)     #create item like VideoItem, ImageItem, MusicItem with name, id, parent
         #self.item.DIDLElement.attrib['xmlns:dc'] = ''
         #self.item.DIDLElement.attrib['xmlns:upnp'] = ''        
@@ -111,14 +113,14 @@ class MediaItem(BackendItem):
         
         if mimetype in ['directory','root']:                            #check if this is container
             self.update_id = 0
-            self.get_url = lambda : self.url                            #simple function to get url, we don't need nothing more complicated
+            self.get_url = lambda : self.u                            #simple function to get url, we don't need nothing more complicated
             self.get_path = lambda : None                               #we don't need path for container so return None
             self.update_id = 0                                          #something to update?   
             if isinstance(self.item, Container):
                 self.item.childCount = 0                                #if this is container we need make sure that at first place it has no children
         else:
-            self.get_url = lambda : self.url                            #function to get url of MediaItem
-            external_url = '%s%s' % (self.store.urlbase, str(self.id))  #creating of external url like http://localhost:port/uuid/dir/item
+            self.get_url = lambda : self.get_url2                            #function to get url of MediaItem
+            external_url = '%s%s' % (urlbase, str(self.id))  #creating of external url like http://localhost:port/uuid/dir/item
             internal_url = 'file://' + path                             #creating internal url like file:///tmp/file.txt
             size = None                                                 #we need size of file
             res = None
@@ -128,12 +130,14 @@ class MediaItem(BackendItem):
                 if mimetype != 'item':                                                          #make sure it has some reasonable mimetype
                     res = Resource(internal_url, 'internal:%s:%s:*' % (hostname, mimetype))    #create internal resource    
                 if 'video' in mimetype:
-                    res, res1, res2 = self.create_VideoItem(res, size, external_url, mimetype, path)
-                    self.createThumbnails(path, urlbase)
+                    res, res1, res2 = self.create_VideoItem(res, size, external_url, mimetype, path, urlbase)
+                    res3 = self.createThumbnails(path, urlbase)
                     self.item.res.append(res)                                                       #add resource to item
                     self.item.res.append(res1)                                                   #add resource to item
                     if res2:
                         self.item.res.append(res2)                                                   #add resource with subtitles to item
+                    if res3:
+                        self.item.res.append(res3)
                 elif 'audio' in mimetype:
                     res, res1 = self.create_AudioItem(res, size, external_url, mimetype, path)
                     self.item.res.append(res)                                                       #add resource to item
@@ -143,6 +147,10 @@ class MediaItem(BackendItem):
                     self.createThumbnails(path, urlbase)
                     self.item.res.append(res)                                                       #add resource to item
                     self.item.res.append(res1)                                                   #add resource to item
+                elif 'text' in mimetype:
+                    res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))
+                    self.item.res.append(res)
+                    self.item.res.append(res1)
                 
     def add_child(self, child, update=False):
         '''
@@ -209,6 +217,9 @@ class MediaItem(BackendItem):
             return self.otherparents
         return None
     
+    def get_url2(self):
+        return self.u
+    
     def get_children(self,start=0, end=0):
         '''
         Get children list
@@ -250,7 +261,7 @@ class MediaItem(BackendItem):
     def get_cover(self):
         '''
         Get cover of item
-        Used also with video and images
+        Used also with Video and images
         '''
         return self.cover
     
@@ -298,9 +309,9 @@ class MediaItem(BackendItem):
         else:
             self.location = path
             
-    def create_VideoItem(self, res, size, external_url, mimetype, path):
+    def create_VideoItem(self, res, size, external_url, mimetype, path, urlbase):
         '''
-        Create resource with videoItem and profiled metadata of video file
+        Create resource with VideoItem and profiled metadata of Video file
         @param res:             input internal resource
         @param size:            size of file
         @param external_url:    external url
@@ -309,23 +320,51 @@ class MediaItem(BackendItem):
         '''
         metadata = helpers.getFileMetadata(path)                                    #get file metadata like duration, bitrate using ffprobe
         #dlna_tags = "DLNA.ORG_PN=AVI;DLNA.ORG_OP=01;DLNA.ORG_CI=0"                      #don't needed????
-        res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
-        res.size = res1.size = size
+        res1 = Resource(external_url, 'http-get:*:%s:%s' % (mimetype,"DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000"))                   #create external resource
+        self.size = res.size = res1.size = size
         res.duration = res1.duration = metadata['duration']
         res.bitrate = res1.bitrate = metadata['bitrate']
         res.nrAudioChannels = res1.nrAudioChannels = metadata['audio_channels']
         res.resolution = res1.resolution = metadata['resolution']
         caption,_ =  os.path.splitext(self.get_path())
-        caption = caption + '.srt'
-        if os.path.exists(caption):
+        caption_srt = caption + '.srt'
+        caption_smi = caption + '.smi'
+        #new_id = self.id.split(".")[0]+".SRT"
+        captions = {}
+        if os.path.exists(caption_srt):
+            new_id = self.id.split(".")[0]+".SRT"
+            mime = "text/srt"
+            self.caption_size = os.path.getsize(caption_srt)
+            captions[mime] = caption_srt
+        if os.path.exists(caption_smi):
+            caption = caption_smi
+            new_id = self.id.split(".")[0]+".SMI"
+            mime = "smi/caption"
+            self.caption_size = os.path.getsize(caption_smi)
+            captions[mime] = caption_smi
+        for mime,caption in captions.iteritems():
+            item = Item
+            self.store.store[new_id] = MediaItem(object_id=new_id,
+                                           itemClass=item,
+                                           path=caption,
+                                           parent=self.parent,
+                                           urlbase=urlbase,
+                                           hostname = self.hostname,
+                                           mimetype=mime,
+                                           store=self)
             hash_from_path = str(id(caption))
-            mimetype = 'text/srt'
-            res2 = Resource(self.url+'?sub=Friends_S06_E20.srt','http-get:*:%s:%s' % (mimetype, '*'))
-            res2.size = os.path.getsize(caption)
-            self.caption = res2.data
+            mimetype = mime
+            res2 = Resource(urlbase+new_id,'http-get:*:%s:%s' % (mimetype, '*'))
+            #res2 = Resource(urlbase+"7.srt",'http-get:*:%s:%s' % (mimetype, '*'))
+            #self.caption_size = os.path.getsize(caption)
+            self.caption = urlbase+new_id
+            self.item.caption = urlbase+new_id
             if not hasattr(self.item, 'attachments'):
                 self.item.attachments = {}
-                self.item.attachments[hash_from_path] = utils.StaticFile(caption)
+                if caption_smi is not None:
+                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_smi)
+                else:
+                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_srt)
             return res, res1, res2
         return res, res1, None
     
@@ -386,14 +425,23 @@ class MediaItem(BackendItem):
         @param urlbase:     urlbase of file to create thumbnail uri
         '''
         try:
-            thumbnail_path,_,_ = helpers._find_thumbnail(helpers.import_thumbnail("file://"+path))     #get thumbnail path from gnome ~/.thumbnails
+            thumbnail_path,mimetype,_ = helpers._find_thumbnail(helpers.import_thumbnail("file://"+path))     #get thumbnail path from gnome ~/.thumbnails
             #hash_from_path = str(test)
     #       self.item.albumArtURI = self.url+'?attachment='+hash_from_path
             self.cover = thumbnail_path
             _,ext =  os.path.splitext(self.cover)
             self.item.albumArtURI = ''.join((urlbase,str(self.id),'?cover',ext))                    #broadcast thumbnail as cover
-                                                                                                            #WMP12 need's special treating...
-            self.item
+            res = Resource(self.item.albumArtURI, "http-get:*:image/png:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=00;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00D00000000000000000000000000000")
+            resolution = None
+            import Image
+            im = Image.open(thumbnail_path)
+            for i in im.size:
+                if resolution is None:
+                    resolution = ""
+                resolution += str(i)+"x"
+            resolution = resolution[:len(resolution)-1]
+            res.resolution =resolution 
+            return res
         except Exception as inst:
             print inst
 
@@ -454,11 +502,12 @@ class MediaStore(BackendStore):
             self.name = kwargs['name']
         except KeyError:
             self.name = "TYT"
+        self.feature_list = {}
         self.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
         self.createContainer("directories",  parent = self.store[str(0)], path="Directories", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-        self.createContainer("Image", parent = self.store[str(0)], path="Image", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-        self.createContainer("Audio", parent = self.store[str(0)], path="Audio", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-        self.createContainer("Video", parent = self.store[str(0)], path="Video", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+        self.feature_list['imageItem'] = self.createContainer("Image", parent = self.store[str(0)], path="Image", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+        self.feature_list['audioItem'] = self.createContainer("Audio", parent = self.store[str(0)], path="Audio", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+        self.feature_list['videoItem'] = self.createContainer("Video", parent = self.store[str(0)], path="Video", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
         self.update_id += 1
         self.searchInContentPath(self.content)                              #recurency search
         #self.divideAllElementsInSeparateContainers()    
@@ -728,11 +777,11 @@ class MediaStore(BackendStore):
     def createItem(self, path, parent, mimetype):
         itemClass = classChooser(mimetype)
         if itemClass == None:
-            return None
+                return None
         
         if mimetype not in ('root', 'directory'):                               #id will be no id +
             _,ext =  os.path.splitext(path)
-            object_id = str(self.getNextID()) + ext.lower()
+            object_id = str(self.getNextID()) + ext.upper()
             self.store[object_id] = MediaItem(object_id=object_id,
                                           itemClass=itemClass,
                                           path=path,
@@ -795,6 +844,40 @@ class MediaStore(BackendStore):
             self.divideElementsFromOneContainerIfNeeded(str(self.containers_map['Video']))
             self.divideElementsFromOneContainerIfNeeded(str(self.containers_map['Audio']))
             self.divideElementsFromOneContainerIfNeeded(str(self.containers_map['Image']))
+
+    def create_containers(self,containers={}):
+        root = ET.Element('Features')
+        root.attrib['xmlns']='urn:schemas-upnp-org:av:avs'
+        root.attrib['xmlns:xsi']='http://www.w3.org/2001/XMLSchema-instance'
+        root.attrib['xsi:schemaLocation']='urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd' 
+        e = ET.SubElement(root, 'Feature')
+        e.attrib['name'] = "somename"
+        e.attrib['version'] = str(1)
+        
+        if (len(containers)):
+            for key, container in containers.items():
+                i = ET.SubElement(e, 'container')
+                id = str(container)
+                i.attrib['id'] = id 
+                if key == "imageItem":
+                    i.attrib['type'] = "object.item.imageItem"
+                elif key == "audioItem":
+                    i.attrib['type'] = "object.item.audioItem"
+                elif key == "videoItem":
+                    i.attrib['type'] = "object.item.videoItem"
+        xml = """<?xml version="1.0" encoding="utf-8"?>""" + ET.tostring( root, encoding='utf-8')
+        return xml
+            
+    def get_containers_x_children(self):
+        root = ET.Element('u:X_GetFeatureListResponse')
+        root.attrib['xmlns:u']='urn:schemas-upnp-org:service:ContentDirectory:1'
+        e = ET.SubElement(root, 'FeatureList')
+        e.text = self.create_containers(self.feature_list)
+        r = """<?xml version="1.0" encoding="utf-8"?>""" + ET.tostring( root, encoding='utf-8')
+        return r
+    
+    def get_x_containers(self):
+        return self.feature_list
 
 def tolist(obj):
     """Return object as a list:

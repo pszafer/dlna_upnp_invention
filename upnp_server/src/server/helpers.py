@@ -48,8 +48,8 @@ def _find_thumbnail(filename,thumbnail_folder='.thumbs'):
     """
     f = filename
     mimetype,_ = mimetypes.guess_type(f, strict=False)
-    dlna_pn = 'DLNA.ORG_PN=PNG_TN'
-    return os.path.abspath(f),mimetype,dlna_pn
+    dlna_pn = 'DLNA.ORG_PN=JPEG_TN'
+    return os.path.abspath("/home/xps/Obrazy/9.JPG"),mimetype,dlna_pn
 
 def create_thumbnail(filename):
     import os, sys

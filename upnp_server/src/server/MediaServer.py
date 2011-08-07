@@ -5,7 +5,7 @@ Created on 08-07-2011
 '''
 import Database
 from server.Database import DBCursor, DBMedia
-from coherence.upnp.core import DIDLLite
+
 
 parameters = {
               'port' : 0,
@@ -58,7 +58,7 @@ class MediaServer(log.Loggable):
         return coherence_instance
     
     def create_MediaServer(self, coherence):
-        from coherence.upnp.devices.media_server import MediaServer
+        from coherence.upnp.devices.media_server import MediaServer as CoherenceMediaServer
         #from fs_storage import FSStore as MediaStore
         from MediaStorage import MediaStore
         kwargs = {}
@@ -78,7 +78,7 @@ class MediaServer(log.Loggable):
         kwargs['max_child_items'] = 10
         #kwargs['dbCursor'] = dbCursor
         
-        server = MediaServer(coherence, MediaStore, **kwargs)         #TODO change here
+        server = CoherenceMediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
     
   
