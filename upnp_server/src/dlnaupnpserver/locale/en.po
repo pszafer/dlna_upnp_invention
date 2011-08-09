@@ -5,30 +5,30 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: dlnaupnpserver\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-09 02:46+0200\n"
-"PO-Revision-Date: 2011-08-09 02:46+0200\n"
-"Last-Translator: Pawe Szafer <pszafer@gmail.com>\n"
+"POT-Creation-Date: 2011-08-09 12:02+0200\n"
+"PO-Revision-Date: 2011-08-09 12:03+0200\n"
+"Last-Translator: Pawel Szafer <pszafer@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: MediaStorage.py:564
+#: ServerClass.py:121 MediaStorage.py:570
+msgid "Video"
+msgstr "Videos"
+
+#: MediaStorage.py:567
 msgid "Directories"
 msgstr "Directories"
 
-#: MediaStorage.py:565
+#: MediaStorage.py:568
 msgid "Image"
-msgstr "Image"
+msgstr "Images"
 
-#: MediaStorage.py:566
+#: MediaStorage.py:569
 msgid "Audio"
-msgstr "Audio"
-
-#: MediaStorage.py:567
-msgid "Video"
-msgstr "Video"
+msgstr "Music"

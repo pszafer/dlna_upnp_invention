@@ -1,7 +1,13 @@
 '''
 Created on 09-07-2011
 
-@author: Pawel Szafer pszafer@gmail.com
+@copyright: 2011,
+@author: Pawel Szafer
+@license:  Licensed under the BSD license
+ http://www.opensource.org/licenses/bsd-license.php
+ 
+@contact: pszafer@gmail.com
+@version: 0.8
 '''
 
 
@@ -13,7 +19,7 @@ from sets import Set
 import stat
 from twisted.python.filepath import FilePath
 
-from server import helpers
+import helpers
 
 import datetime
 import gettext
@@ -29,6 +35,7 @@ import traceback
 from StringIO import StringIO
 import Image
 import imghdr
+from gettext import locale
 
 
 try:
@@ -42,16 +49,12 @@ except Exception,msg:
 
 media_server.COVER_REQUEST_INDICATOR = re.compile("(.*?cover\.[A-Z\a-z]{3,4}(&WMHME=1)?)$")         #special patch to work thumbnails with WMP12 
 
-APP="package"
-DIR=os.path.dirname (__file__) + '/locale'
-#locale.setlocale(locale.LC_ALL, '')
-#gettext.bindtextdomain(APP, DIR)
-#gettext.textdomain(APP)
-#_ = gettext.gettext
+APP="dlnaupnpserver"
+translations = gettext.translation(APP, "./locale", fallback = True, languages=['pl'])
+translations.install()
 
-lang_en = gettext.translation(APP, DIR, 'en')
 #lang_pl = gettext.translation(APP, DIR, languages=['pl'])
-lang_en.install()
+#lang_en.install()
 #lang_pl.install()
 
 def raw_generate(fn):
@@ -107,9 +110,12 @@ class MediaItem(BackendItem):
         self.otherparents = []
         self.hostname = hostname
         self.sorted = False
-        if parent == None:
+        if parent == None and subtitles == False:
             parent_id = -1
             self.parent_id = parent_id
+        elif parent == None and subtitles == True:
+            parent_id = -2
+            self.parent_id = None
         else:
             parent_id = parent.get_id()
             self.parent_id = parent_id
@@ -172,9 +178,11 @@ class MediaItem(BackendItem):
                     self.item.res.append(res1)                     
                 elif 'image' in mimetype:
                     res, res1 = self.create_ImageItem(res, size, external_url, mimetype, path)
-                    self.createThumbnails(path, urlbase)
+                    res3 = self.createThumbnails(path, urlbase)
                     self.item.res.append(res)                                                       #add resource to item
                     self.item.res.append(res1)                                                   #add resource to item
+                    if res3:
+                        self.item.res.append(res3)
                 elif 'text' in mimetype:                                                            #especially for subtitles
                     res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))
                     self.item.res.append(res)
@@ -407,7 +415,7 @@ class MediaItem(BackendItem):
             self.store.store[new_id] = MediaItem(object_id=new_id,
                                            itemClass=item,
                                            path=caption,
-                                           parent=self.parent,
+                                           parent=None,
                                            urlbase=urlbase,
                                            hostname = self.hostname,
                                            mimetype=mime,
@@ -510,9 +518,7 @@ class MediaStore(BackendStore):
         BackendStore.__init__(self, server, **kwargs)
         self.next_id = 0
         self.warning("MediaStore init, what I got: %r", kwargs)
-        #self.db = kwargs['db']
         self.name = kwargs.get('name', 'Media')
-        #self.dbCursor = kwargs['dbCursor']
         self.content = kwargs.get('content',None)
         self.store = {}
         self.containers_map = {}
@@ -558,7 +564,7 @@ class MediaStore(BackendStore):
         try:
             self.name = kwargs['name']
         except KeyError:
-            self.name = "TYT"
+            self.name = "SERVER UPNP"
         self.feature_list = {}
         self.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
         self.createContainer("directories",  parent = self.store[str(0)], path=_("Directories"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
@@ -832,7 +838,7 @@ class MediaStore(BackendStore):
         if itemClass == None:
                 return None
         
-        if mimetype not in ('root', 'directory'):                               #id will be no id +
+        if mimetype not in ('root', 'directory') and 'video' in mimetype:                               #id will be no id +
             _,ext =  os.path.splitext(path)
             object_id = str(self.getNextID()) + ext.upper()
             self.store[object_id] = MediaItem(object_id=object_id,

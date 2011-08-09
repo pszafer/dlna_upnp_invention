@@ -1,22 +1,27 @@
 '''
 Created on 08-07-2011
+@copyright: 2011,
+@author: Pawel Szafer
+@license:  Licensed under the BSD license
+ http://www.opensource.org/licenses/bsd-license.php
+ 
+@contact: pszafer@gmail.com
+@version: 0.8
 
-@author: xps
 '''
-import Database
-from server.Database import DBCursor, DBMedia
-
-
-'''
-Main parameters, not used
-'''
-parameters = {
-              'port' : 0, 
-              'ip_addr': None,
-              }
+#import Database
+#from Database import DBCursor, DBSettings
+from dlnaupnpserver.Database import DBCursor, DBSettings, DBContent
 
 from coherence import log
 
+def create_uuid():
+        '''
+        Create Your own uuid
+        TODO: change to run this once and then get from db
+        '''
+        import uuid
+        return uuid.uuid4()
 
 class MediaServer(log.Loggable):
     '''
@@ -27,29 +32,24 @@ class MediaServer(log.Loggable):
     
     def __init__(self):
         self.coherence = None
-    
+        self.dbCursor = DBCursor()
     def run(self):
         '''
         Create coherence and run media server
         '''
         #reactor install
-        self.coherence = self.get_coherence()
+        settings = self.dbCursor.select("settings", "id=1", True)
+        self.coherence = self.get_coherence(settings.ip_addr, settings.port, settings.transcoding)
         #self.dbCursor = dbCursor
         if self.coherence is None:
             self.error("None Coherence")
             return
         self.warning("RUNNING")
-        self.server = self.create_MediaServer(self.coherence)
+        self.server = self.create_MediaServer(self.coherence, settings)
     
-    def create_uuid(self):
-        '''
-        Create Your own uuid
-        TODO: change to run this once and then get from db
-        '''
-        import uuid
-        return uuid.uuid4()
     
-    def get_coherence(self):
+    
+    def get_coherence(self, ip_addr, port, transcoding="no"):
         '''
         Create instance of Coherence
         '''
@@ -62,18 +62,16 @@ class MediaServer(log.Loggable):
                             'logmode' : 'info',
                             'controlpoint' : 'yes',
                             'plugins' : {},
-                            'transcoding' : 'yes',
+                            'transcoding' : transcoding,
                             }
-        serverport = parameters.get("port")
-        if serverport:
-            coherence_config['serverport'] = serverport
-        ip_addr = parameters.get("ip_addr")
+        if port:
+            coherence_config['serverport'] = port
         if ip_addr:
             coherence_config['interface'] = ip_addr
         coherence_instance = Coherence(coherence_config)
         return coherence_instance
     
-    def create_MediaServer(self, coherence):
+    def create_MediaServer(self, coherence, settings):
         '''
         Run MediaStore and Coherence server
         @param coherence:coherence instance from get_coherence
@@ -82,23 +80,30 @@ class MediaServer(log.Loggable):
         from coherence.upnp.devices.media_server import MediaServer as CoherenceMediaServer
         #from fs_storage import FSStore as MediaStore
         from MediaStorage import MediaStore
+        
+        
         kwargs = {}
-        kwargs['uuid'] = self.create_uuid()
+        kwargs['uuid'] = settings.uuid
         uuid = str(kwargs['uuid'])
         kwargs['uuid'] = uuid
         self.warning("MediaServer run, what I got: %r", kwargs)
-        name = "ServerUPNP"
+        name = settings.name
         if name:
             name = name.replace('{host}', coherence.hostname)
             kwargs['name'] = name
-        content = ["/home/xps/Wideo/test/"]#, "/home/xps/Obrazy/majowka2011/connect", "/home/xps/Muzyka/mp3"]
+        md = self.dbCursor.select("content", single = False)
+        content = []
+        for con in md:
+            content.append(con.content)
         kwargs['content']= content
         kwargs['urlbase'] = coherence.hostname
-        kwargs['transcoding'] = 'no'
-        kwargs['do_mimetype_container'] =  True
-        kwargs['max_child_items'] = 10
-        #kwargs['dbCursor'] = dbCursor
-        
+        kwargs['transcoding'] = settings.transcoding
+        if settings.enable_inotify == 0:
+            kwargs['enable_inotify'] = "no" 
+        else: 
+            kwargs['enable_inotify'] = "yes"
+        kwargs['do_mimetype_container'] =  settings.do_mimetype_container
+        kwargs['max_child_items'] = settings.max_child_items
         server = CoherenceMediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
     
@@ -106,17 +111,10 @@ class MediaServer(log.Loggable):
         
 from twisted.internet import reactor
 
-#dbCursor = DBCursor()
-#dbCursor.begin("media.db", True)
-#dbCursor.insert("media", DBMedia("aaa"))
-#dbCursor.insert("media", DBMedia("bbb"))
-#md = dbCursor.select("media", single = True)
-#if isinstance(md, DBMedia):
-#    print "One something %r, %s" % (md.id, md.name)
-#else:
-#    if md is not None:
-#        for i in md:
-#            print "something %r, %s" % (i.id, i.name)
+dbCursor = DBCursor()
+dbCursor.begin("media.db", False)
+dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+dbCursor.insert(DBSettings("GreatServer", create_uuid(), 'no', 'yes', None, 0, True, 300))
 
 
 mediaServer = MediaServer()

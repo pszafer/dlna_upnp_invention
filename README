@@ -1,3 +1,56 @@
-DLNA/UPnP server
+DLNA UPNP Server is application written in Python to share media 
+with all important hardware producer, which cooperate with UPnP or DLNA.
 
-//TODO readme to do
+It will work under Linux hardware, this means PC (Ubuntu, Debian), routers (Tomato, DD-WRT).
+Probably other too, but it wouldn't be tested
+
+It is based on modified Coherence framework.
+I want to thank You authors of Coherence framework for their job because 
+without Coherence I wouldn't wrote this application.
+
+For them, if they want they could get modified/corrected coherence.
+
+It is licenced under the BSD licence except Coherence, which is still under MIT licence.
+
+You are welcome to invent some original name for this app.
+
+DLNA UPNP Server is known to work with:
+   - Sony Playstation 3
+   - XBox360
+   - Samsung TVs (video - smi, srt, txt subtitles),
+   - Samsung Galaxy S I9000 (without subtitles),
+   - Samsung Galaxy S I9100 (without subtitles),
+   - Samsung Wave S8500 (without subtitles),
+   - LG BD (video - srt subtitles),
+   - Panasonic TVs (video - don't know about subtitles, have it tested only for 20 minutes),
+   - Sony Bravia TVs (as above),
+   - Windows Media Player,
+   - Totem,
+   - Rhytmbox,
+   - Phillips TVs with UPNP protocol (don't know about new series with DLNA),
+   
+
+Installation
+========================
+
+For now just start MediaServer.py and it should work if there are all good dependencies.
+Will work on that
+
+Quickstart
+==========
+
+As above
+
+Troubleshooting
+===============
+
+Contact me
+
+Support
+=======
+
+For now just write at pszafer(at)gmail.com
+with tag in subject [DLNAUPNP] for example (without qoutes):
+Subject: "[DLNAUPNP] I have problem"
+
+For other mails I could not respond

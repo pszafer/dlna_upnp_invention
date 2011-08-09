@@ -1,7 +1,14 @@
 '''
 Created on 30-07-2011
 
-@author: xps
+@copyright: 2011,
+@author: Pawel Szafer
+@license:  Licensed under the BSD license
+ http://www.opensource.org/licenses/bsd-license.php
+ 
+@contact: pszafer@gmail.com
+@version: 0.8
+
 '''
 
 from gnome import ui
@@ -52,7 +59,7 @@ def _find_thumbnail(filename,thumbnail_folder='.thumbs'):
     dlna_pn = 'DLNA.ORG_PN=JPEG_TN'
     return os.path.abspath(f),mimetype,dlna_pn
 
-def create_thumbnail(uri):
+def create_thumbnail(uri, mimetype):
     directory = os.path.expanduser('~')+"/.thumbnails/dlna"
     if os.path.exists(directory):
         if not os.path.isdir(directory):
@@ -65,7 +72,13 @@ def create_thumbnail(uri):
         new_path = directory + "/" + hash + ".jpg"
     _, path = uri.split("file://") 
     #ffmpegthumbnailer -i Friends_S06_E20.avi -a -s 120 -t 33% -o out.jpg
-    os.system("ffmpegthumbnailer -i %s -a -t %s -s 120x120 -o %s" % (path, "33%", new_path))
+    if 'video' in mimetype:
+        os.system("ffmpegthumbnailer -i %s -a -t %s -s 120x120 -o %s" % (path, "33%", new_path))
+    elif 'image' in mimetype:
+        size = 120, 120
+        im = Image.open(path)
+        im.thumbnails(size, Image.ANTIALIAS)
+        im.save(new_path, "JPEG") 
     return new_path
     
     
@@ -91,8 +104,9 @@ def copy_file_and_change_path(path, hash):
         os.mkdir(directory)
     if os.path.exists(directory) and os.path.isdir(directory):
         new_path = directory + "/" + hash + ".jpg"
-        im = Image.open(path)
-        im.save(new_path)
+        if not os.path.exists(new_path):
+            im = Image.open(path)
+            im.save(new_path)
         return new_path
   
 def import_thumbnail(uri):
@@ -104,7 +118,7 @@ def import_thumbnail(uri):
     if not os.path.exists(path):
         result = create_thumbnail_via_gnome(uri)
         if result == False:
-            return create_thumbnail(uri)
+            return create_thumbnail(uri, mimetype)
     new_path = copy_file_and_change_path(path, hash)
     return new_path
 

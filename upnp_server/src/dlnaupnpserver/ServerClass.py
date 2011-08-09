@@ -1,17 +1,23 @@
 '''
 Created on 05-07-2011
 
-@author: Pawel Szafer, pszafer@gmail.com
+@copyright: 2011,
+@author: Pawel Szafer
+@license:  Licensed under the BSD license
+ http://www.opensource.org/licenses/bsd-license.php
+ 
+@contact: pszafer@gmail.com
+@version: 0.8
+
+@note:this is only test module
 '''
 
 from twisted.internet import reactor
 from coherence.base import Coherence 
 import gnome.ui
 import gnomevfs
-from server import helpers
-import Image
-import imghdr
-from server.helpers import create_thumbnail
+import gettext
+import os
 
 class ServerClass(object):
     '''
@@ -110,18 +116,19 @@ def create_thumbnail_via_gnome(uri):
 
 from StringIO import StringIO
 
-def raw_generate(fn):
-        "Generate thumbnail (retruns rawdata)"
-        im = Image.open(fn)
-        buf = StringIO()
-        im.save(buf, imghdr.what(fn))
-        return buf.getvalue()
-    
-    
-#aaa = raw_generate("/home/xps/Obrazy/9.JPG")
-#file("/home/xps/Obrazy/tryme","w").write(aaa)
+APP="dlnaupnpserver"
+DIR=os.path.dirname (__file__) + '/locale'
+#locale.setlocale(locale.LC_ALL, '')
+#gettext.bindtextdomain(APP, DIR)
+#gettext.textdomain(APP)
+#_ = gettext.gettext
 
-create_thumbnail("file:///home/xps/Wideo/test/Friends_S06_E20.avi")
+#gettext.install(APP, './locale', unicode=1)
+translations = gettext.translation(APP, "./locale", languages=['pl'])
+translations.install()
+print _("Image")
+
+
 
 #liczba = round(286/72,4)
 #
