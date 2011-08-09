@@ -9,6 +9,9 @@ from coherence.base import Coherence
 import gnome.ui
 import gnomevfs
 from server import helpers
+import Image
+import imghdr
+from server.helpers import create_thumbnail
 
 class ServerClass(object):
     '''
@@ -84,26 +87,42 @@ def create_thumbnail_via_gnome(uri):
 #    b += str(i)+"x"
 #b = b[:len(b)-1]
 #print b
-a = [66.25, 333, 335, 1, 1234.5]
+#a = [66.25, 333, 335, 1, 1234.5]
+#
+#
+#print a
+#print a[:2]
+#
+#for i in range(0, 2):
+#    print a[i]
+#itemmimetype = "x-mkv"
+#itemmimetype = "avi"
+#print itemmimetype.replace("x-", "")
+#
+#zara = {}
+#
+#zara['test'] = "aaa"
+#zara['test2'] = "bbb"
+#
+#for i in zara:
+#    print i[0]
+#    print i[1]
 
+from StringIO import StringIO
 
-print a
-print a[:2]
+def raw_generate(fn):
+        "Generate thumbnail (retruns rawdata)"
+        im = Image.open(fn)
+        buf = StringIO()
+        im.save(buf, imghdr.what(fn))
+        return buf.getvalue()
+    
+    
+#aaa = raw_generate("/home/xps/Obrazy/9.JPG")
+#file("/home/xps/Obrazy/tryme","w").write(aaa)
 
-for i in range(0, 2):
-    print a[i]
-itemmimetype = "x-mkv"
-itemmimetype = "avi"
-print itemmimetype.replace("x-", "")
+create_thumbnail("file:///home/xps/Wideo/test/Friends_S06_E20.avi")
 
-zara = {}
-
-zara['test'] = "aaa"
-zara['test2'] = "bbb"
-
-for i in zara:
-    print i[0]
-    print i[1]
 #liczba = round(286/72,4)
 #
 #liczba = (286 + 72 // 2) // 72

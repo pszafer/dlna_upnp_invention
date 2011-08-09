@@ -7,22 +7,31 @@ import Database
 from server.Database import DBCursor, DBMedia
 
 
+'''
+Main parameters, not used
+'''
 parameters = {
-              'port' : 0,
+              'port' : 0, 
               'ip_addr': None,
               }
 
 from coherence import log
 
+
 class MediaServer(log.Loggable):
+    '''
+    Class which starts server with own MediaStore
+    '''
     logType = 'dlna_upnp_MediaServer'
     
     
     def __init__(self):
         self.coherence = None
-        #create config
     
     def run(self):
+        '''
+        Create coherence and run media server
+        '''
         #reactor install
         self.coherence = self.get_coherence()
         #self.dbCursor = dbCursor
@@ -33,10 +42,17 @@ class MediaServer(log.Loggable):
         self.server = self.create_MediaServer(self.coherence)
     
     def create_uuid(self):
+        '''
+        Create Your own uuid
+        TODO: change to run this once and then get from db
+        '''
         import uuid
         return uuid.uuid4()
     
     def get_coherence(self):
+        '''
+        Create instance of Coherence
+        '''
         try:
             from coherence.base import Coherence
         except ImportError, e:
@@ -58,6 +74,11 @@ class MediaServer(log.Loggable):
         return coherence_instance
     
     def create_MediaServer(self, coherence):
+        '''
+        Run MediaStore and Coherence server
+        @param coherence:coherence instance from get_coherence
+        TODO: get data from db, not from strings
+        '''
         from coherence.upnp.devices.media_server import MediaServer as CoherenceMediaServer
         #from fs_storage import FSStore as MediaStore
         from MediaStorage import MediaStore
@@ -97,30 +118,7 @@ from twisted.internet import reactor
 #        for i in md:
 #            print "something %r, %s" % (i.id, i.name)
 
+
 mediaServer = MediaServer()
 reactor.callWhenRunning(mediaServer.run)
 reactor.run()
-
-#from coherence.extern.et import ET, ElementInterface
-#from coherence.upnp.core import DIDLLite
-#class Child(object):
-#    def __init__(self):
-#        self.anything = "test"
-#class Element(ElementInterface):
-#    def __init__(self):
-#        ElementInterface.__init__(self, 'DIDL-Lite', {})
-#        self.attrib['xmlns'] = 'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/'
-#        self.attrib['xmlns:dc'] = 'http://purl.org/dc/elements/1.1/'
-#        self.attrib['xmlns:upnp'] = 'urn:schemas-upnp-org:metadata-1-0/upnp/'
-#        self.attrib['xmlns:dlna'] = 'urn:schemas-dlna-org:metadata-1-0'
-#        self.attrib['xmlns:pv'] = 'http://www.pv.com/pvns/'
-#        self._items = []
-#        self._items.append("aaa")
-#        self._children = []
-#        #self._children.append(5)
-#
-#did = DIDLLite.VideoItem()
-##didd.addItem(did)
-#aaa = did.toString()
-#
-#print "t" + aaa

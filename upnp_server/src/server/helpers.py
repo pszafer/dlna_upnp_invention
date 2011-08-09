@@ -4,11 +4,12 @@ Created on 30-07-2011
 @author: xps
 '''
 
-import gnome.ui
+from gnome import ui
 import mimetypes
 import gnomevfs
 import re
 import os
+import Image
 
 mimetypes.init()
 mimetypes.add_type('audio/x-m4a', '.m4a')
@@ -23,7 +24,7 @@ mimetypes.add_type('video/avi', '.divx')
 mimetypes.add_type('video/avi', '.avi')
 mimetypes.add_type('video/ogg', '.ogv')
 #mimetypes.add_type('video/x-matroska', '.mkv')
-mimetypes.add_type('video/x-mkv', '.mkv')
+mimetypes.add_type('video/avi', '.mkv')
 mimetypes.add_type('text/plain', '.srt')
 mimetypes.add_type('image/png', '.png')
 mimetypes.add_type('image/jpeg', '.jpg')
@@ -49,31 +50,28 @@ def _find_thumbnail(filename,thumbnail_folder='.thumbs'):
     f = filename
     mimetype,_ = mimetypes.guess_type(f, strict=False)
     dlna_pn = 'DLNA.ORG_PN=JPEG_TN'
-    return os.path.abspath("/home/xps/Obrazy/9.JPG"),mimetype,dlna_pn
+    return os.path.abspath(f),mimetype,dlna_pn
 
-def create_thumbnail(filename):
-    import os, sys
-    import Image
+def create_thumbnail(uri):
+    directory = os.path.expanduser('~')+"/.thumbnails/dlna"
+    if os.path.exists(directory):
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
+    else:
+        os.mkdir(directory)
+    if os.path.exists(directory) and os.path.isdir(directory):
+        import hashlib
+        hash = hashlib.md5(uri).hexdigest()
+        new_path = directory + "/" + hash + ".jpg"
+    _, path = uri.split("file://") 
+    #ffmpegthumbnailer -i Friends_S06_E20.avi -a -s 120 -t 33% -o out.jpg
+    os.system("ffmpegthumbnailer -i %s -a -t %s -s 120x120 -o %s" % (path, "33%", new_path))
+    return new_path
     
-    # Use "ffmpeg -i <videofile>" to get total length by parsing the error message
-    chout, chin, cherr = os.popen3("ffmpeg -i %s" % filename)
-    out = cherr.read()
-    dp = out.index("Duration: ")
-    duration = out[dp+10:dp+out[dp:].index(",")]
-    hh, mm, ss = map(float, duration.split(":"))
-    total = (hh*60 + mm)*60 + ss
-    
-    # Use "ffmpeg -i <videofile> -ss <start> frame<nn>.png" to extract 9 frames
-    i = 1
-    t = 2
-    os.system("ffmpeg -i %s -s 64x64 -ss %0.3fs frame%i.png" % (filename, t, i))
-    
-    # Make a full 3x3 image by pasting the snapshots
-    img = Image.open("frame%i.png" % (i))
     
 def create_thumbnail_via_gnome(uri):
     mimetype = mimetype = gnomevfs.get_mime_type(uri)
-    thumbFactory = gnome.ui.ThumbnailFactory(gnome.ui.THUMBNAIL_SIZE_NORMAL)
+    thumbFactory = ui.ThumbnailFactory(ui.THUMBNAIL_SIZE_NORMAL)
     if thumbFactory.can_thumbnail(uri, mimetype,0):
         thumbnail = thumbFactory.generate_thumbnail(uri, mimetype)
         if thumbnail != None:
@@ -84,17 +82,33 @@ def create_thumbnail_via_gnome(uri):
     else:
         return False
 
+def copy_file_and_change_path(path, hash):
+    directory = os.path.expanduser('~')+"/.thumbnails/dlna"
+    if os.path.exists(directory):
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
+    else:
+        os.mkdir(directory)
+    if os.path.exists(directory) and os.path.isdir(directory):
+        new_path = directory + "/" + hash + ".jpg"
+        im = Image.open(path)
+        im.save(new_path)
+        return new_path
   
 def import_thumbnail(uri):
     import hashlib
     hash = hashlib.md5(uri).hexdigest()
-    path = "/home/xps/.thumbnails/normal/"+hash+".png"
+    
+    path = os.path.expanduser('~') + "/.thumbnails/normal/"+hash+".png"
     mimetype, _ = mimetypes.guess_type(uri, strict=False)
     if not os.path.exists(path):
         result = create_thumbnail_via_gnome(uri)
         if result == False:
-            pass    #TODO create thumbnail via ffmpeg or other way, different with mimetype
-    return path
+            return create_thumbnail(uri)
+    new_path = copy_file_and_change_path(path, hash)
+    return new_path
+
+
 
 def getFileMetadata(filename):
     import subprocess

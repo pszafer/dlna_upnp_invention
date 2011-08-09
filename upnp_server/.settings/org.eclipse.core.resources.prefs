@@ -1,4 +1,7 @@
-#Wed Jul 20 21:12:37 CEST 2011
+#Mon Aug 08 19:04:26 CEST 2011
 eclipse.preferences.version=1
+encoding//src/coherence/backend.py=utf-8
+encoding//src/coherence/upnp/devices/basics.py=utf-8
+encoding//src/coherence/upnp/devices/media_server.py=utf-8
 encoding//src/server/fs_storage.py=utf-8
 encoding//src/server/test_content_directory_server.py=utf-8
