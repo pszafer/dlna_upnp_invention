@@ -4,7 +4,7 @@
 # Copyright 2005, Tim Potter <tpot@samba.org>
 # Copyright 2006 John-Mark Gurney <gurney_j@resnet.uoregon.edu>
 # Copyright 2006, Frank Scholz <coherence@beebits.net>
-
+# Modified by Pawel Szafer <pszafer@gmail.com>, Copyright 2011
 # Content Directory service
 
 from twisted.python import failure

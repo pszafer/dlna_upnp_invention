@@ -4,7 +4,7 @@
 # http://opensource.org/licenses/mit-license.php
 
 # Copyright 2006,2007 Frank Scholz <coherence@beebits.net>
-
+# Modified by Pawel Szafer <pszafer@gmail.com>, Copyright 2011
 import os
 import re
 import traceback

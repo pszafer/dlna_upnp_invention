@@ -2,7 +2,7 @@
 # http://opensource.org/licenses/mit-license.php
 
 # Copyright 2006, Frank Scholz <coherence@beebits.net>
-
+# Modified by Pawel Szafer <pszafer@gmail.com>, Copyright 2011
 # Connection Manager service
 import time
 

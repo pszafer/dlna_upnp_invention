@@ -3,7 +3,7 @@
 
 # Copyright 2005, Tim Potter <tpot@samba.org>
 # Copyright 2006, Frank Scholz <coherence@beebits.net>
-
+# Modified by Pawel Szafer <pszafer@gmail.com>, Copyright 2011
 """
 TODO:
 
