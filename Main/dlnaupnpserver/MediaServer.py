@@ -13,8 +13,7 @@ Created on 08-07-2011
 #from Database import DBCursor, DBSettings
 from Database import DBCursor, DBSettings, DBContent
 
-
-from coherence import log
+from modCoherence import log
 import sys
 import os.path
 
@@ -26,6 +25,13 @@ def create_uuid():
         import uuid
         return uuid.uuid4()
 
+def write_settings_to_file(external_address, media_db_path):
+    file = open(".settings.dat", "w")
+    file.write("Do not change anything in this file!!!\n")
+    file.write(str(external_address).encode("hex")+"\n")
+    file.write(str(media_db_path).encode("hex"))
+    file.close()
+
 class MediaServer(log.Loggable):
     '''
     Class which starts server with own MediaStore
@@ -33,9 +39,12 @@ class MediaServer(log.Loggable):
     logType = 'dlna_upnp_MediaServer'
     
     
-    def __init__(self):
+    def __init__(self, dbCursor = None):
         self.coherence = None
-        self.dbCursor = DBCursor()
+        if dbCursor is None:
+            self.dbCursor = DBCursor()
+        else:
+            self.dbCursor = dbCursor
     def run(self):
         '''
         Create coherence and run media server
@@ -57,7 +66,7 @@ class MediaServer(log.Loggable):
         Create instance of Coherence
         '''
         try:
-            from  Main.coherence.base import Coherence
+            from modCoherence.base import Coherence
         except ImportError, e:
             self.error("Coherence not found %d", e)
             return None
@@ -72,9 +81,7 @@ class MediaServer(log.Loggable):
         if ip_addr:
             coherence_config['interface'] = ip_addr
         coherence_instance = Coherence(coherence_config)
-        file = open(".address.dat", "w")
-        file.write(str(coherence_instance.external_address).encode("hex"))
-        file.close()
+        write_settings_to_file(coherence_instance.external_address, self.dbCursor.db_path)
         return coherence_instance
     
     def create_MediaServer(self, coherence, settings):
@@ -83,7 +90,7 @@ class MediaServer(log.Loggable):
         @param coherence:coherence instance from get_coherence
         TODO: get data from db, not from strings
         '''
-        from coherence.upnp.devices.media_server import MediaServer as CoherenceMediaServer
+        from modCoherence.upnp.devices.media_server import MediaServer as CoherenceMediaServer
         #from fs_storage import FSStore as MediaStore
         from MediaStorage import MediaStore
         
@@ -123,13 +130,13 @@ new_dir, _ = os.path.split(PROJECT_DIR)
 print sys.path
 sys.path.insert(0, new_dir)
 print sys.path
-dbCursor = DBCursor()
+dbCursor = DBCursor(db_path=dbpath)
 
 dbCursor.begin(dbpath, False)
 dbCursor.insert(DBContent("/home/xps/Wideo/test"))
 dbCursor.insert(DBSettings("GreatServer", create_uuid(), 'no', 'yes', None, 0, True, 300))
 
 
-mediaServer = MediaServer()
+mediaServer = MediaServer(dbCursor)
 reactor.callWhenRunning(mediaServer.run)
 reactor.run()

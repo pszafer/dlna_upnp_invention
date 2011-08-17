@@ -12,4 +12,14 @@ class BlogPost(models.Model):
                             self.body
                             )
     
+    
+
+class DBContainer(models.Model):
+    ip_address = models.CharField(max_length=20)
+    db_path = models.CharField(max_length=200)
+    created = models.BooleanField(default=False)
+    session_id = models.CharField(max_length=300)
+    
+    
+            
 admin.site.register(BlogPost)

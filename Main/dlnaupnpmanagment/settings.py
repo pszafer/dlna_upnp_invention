@@ -4,6 +4,8 @@
 import os.path
 PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
 
+
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 

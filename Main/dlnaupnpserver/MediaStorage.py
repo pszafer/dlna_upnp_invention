@@ -11,8 +11,8 @@ Created on 09-07-2011
 '''
 
 
-from coherence.upnp.core.DIDLLite import classChooser , Container, Resource, Item
-from coherence.extern.et import ET
+from modCoherence.upnp.core.DIDLLite import classChooser , Container, Resource, Item
+from modCoherence.extern.et import ET
 
 import os
 from sets import Set
@@ -25,9 +25,9 @@ import datetime
 import gettext
 
 
-from coherence.backend import BackendItem, BackendStore
-from coherence.upnp.devices import media_server
-from coherence.upnp.core import utils
+from modCoherence.backend import BackendItem, BackendStore
+from modCoherence.upnp.devices import media_server
+from modCoherence.upnp.core import utils
 
 import re
 from aifc import Error
@@ -35,13 +35,12 @@ import traceback
 from StringIO import StringIO
 import Image
 import imghdr
-from gettext import locale
 
 
 try:
-    from coherence.extern.inotify import INotify
-    from coherence.extern.inotify import IN_CREATE, IN_DELETE, IN_MOVED_FROM, IN_MOVED_TO, IN_ISDIR
-    from coherence.extern.inotify import IN_CHANGED
+    from modCoherence.extern.inotify import INotify
+    from modCoherence.extern.inotify import IN_CREATE, IN_DELETE, IN_MOVED_FROM, IN_MOVED_TO, IN_ISDIR
+    from modCoherence.extern.inotify import IN_CHANGED
     haz_inotify = True
 except Exception,msg:
     haz_inotify = False
@@ -58,7 +57,7 @@ translations.install()
 #lang_pl.install()
 
 def raw_generate(fn):
-        "Generate thumbnail (retruns rawdata)"
+        "Generate thumbnail (returns rawdata)"
         im = Image.open(fn)
         buf = StringIO()
         im.save(buf, imghdr.what(fn))

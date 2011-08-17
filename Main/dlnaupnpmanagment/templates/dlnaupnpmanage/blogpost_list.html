@@ -35,21 +35,22 @@
 		
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript">
+			
 			function update(){
 				update_holder = $("#update-holder");
-				$.getJSON("update",
-					function(data){
-						cycle_class = "even";
-						jQuery.each(data, function() {
-							update_holder.prepend('<div class="update "' + cycle_class
-							+ '"><div class="timestamp">'
-							+ this.fields.timestamp
-							+ '</div><div class="text">'
-							+ this.fields.body
-							+ '</div><div class="clear"></div></div>');
-							cycle_class = (cycle_class == "odd")? "even" : "odd";
-						});
-					});
+				$.getJSON("update", function(data){
+					cycle_class = "even"
+					jQuery.each(data, function() {
+								//alert(this.fields.timestamp);
+								update_holder.prepend('<div class="update "' + cycle_class
+									+ '"><div class="timestamp">'
+									+ this.fields.timestamp
+									+ '</div><div class="text">'
+									+ this.fields.body
+									+ '</div><div class="clear"></div></div>');
+				cycle_class = (cycle_class == "odd")? "even" : "odd";
+							});
+				});
 			}
 		</script>
 	</head>

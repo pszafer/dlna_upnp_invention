@@ -14,6 +14,7 @@ Created on 15-07-2011
 from storm.locals import Store, Int, Unicode
 from storm.database import create_database
 from storm.exceptions import IntegrityError
+import os
 
 TABLES = ["media", "settings"]
 database = None
@@ -81,6 +82,10 @@ class DBCursor(object):
     '''
     Cursor to work with sqlite3 database
     '''
+    
+    def __init__(self, db_path=None):
+        self.db_path = db_path
+    
     def load_db(self, uri):
         global database
         global store
@@ -122,6 +127,7 @@ class DBCursor(object):
         
     
     def begin(self, db_filename, clearTable=False):
+        self.db_path = os.path.abspath(db_filename)
         store = self.load_db("sqlite:"+db_filename)
         self.create_table_settings()
         self.create_table_content()
