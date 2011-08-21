@@ -19,7 +19,7 @@ class Config(ConfigItem):
     def __init__(self,filename,root=None,preamble=False,element2attr_mappings=None):
         self.filename = filename
         self.element2attr_mappings = element2attr_mappings or {}
-        self.db = parse_xml(open(self.filename).read())
+        self.db = parse_xml(open(self.filename)._read())
         self.config = self.db = ConvertXmlToDict(self.db.getroot())
         self.preamble = ''
         if preamble == True:

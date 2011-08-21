@@ -1,0 +1,95 @@
+body {
+	padding: 0;
+	margin: 0 0;
+	background: #f0f0f0;
+	font: 12px sans-serif;
+	color: #000000;
+}
+
+td{
+	font: 12px sans-serif;
+}
+
+form{
+	padding: 0;
+	margin: 0;
+}
+
+#maintable {
+	background: #ffffff;
+	border-spacing: 0;
+	width: 900px;
+	margin: 2px auto;
+	margin-bottom: 50px;
+	height: 100%
+}
+
+#maintablehead {
+	height: 130px;
+	padding: 15px 10px 13px 10px;
+}
+	
+
+#header {
+	background: #C0C0C0;
+	border-bottom: 2px dotted; #ddd;
+}
+
+
+#htable {
+	background: #C0C0C0;
+	border-spacing: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#htable text {
+	width: 600px;
+	background: #C0C0C0;
+}
+
+#htable .title {
+	
+	font: 25px sans-serif;
+	color: #fff;
+	font-weight: bold;
+}
+
+#htable .version {
+	font: 25px sans-serif;
+	color: #fff;
+	font-weight: bold;
+}
+
+#htable .logo {
+	width: 300px;
+	text-align: right;
+}
+
+#content {
+	padding: 5px 4px 20px 4px;
+	vertical-align: top;
+	width: 770px;
+}
+
+#htable img {
+	
+	max-height: 130px;
+}
+
+#menu {
+	width: 130px;
+	font-size: 12px;
+	border-right: 1px solid; #f0f0f0;
+	padding: 0px 0;
+	vertical-align: top;
+}
+
+#menu a {
+display: block;
+//color: #af4141;
+}
+
+#menu a.indent1 {
+padding: 2px 0 2px 10px;
+}

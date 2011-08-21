@@ -16,6 +16,7 @@ from Database import DBCursor, DBSettings, DBContent
 from modCoherence import log
 import sys
 import os.path
+from JSONRPCServer import ThreadedJsonServer
 
 def create_uuid():
         '''
@@ -31,6 +32,15 @@ def write_settings_to_file(external_address, media_db_path):
     file.write(str(external_address).encode("hex")+"\n")
     file.write(str(media_db_path).encode("hex"))
     file.close()
+
+class SocketServer(ThreadedJsonServer):
+    def __init__(self):
+        super(SocketServer, self).__init__()
+        self.timeout = 2.0
+    def processMessage(self, obj):
+        if obj != '':
+            if obj['message'] == "new connection":
+                print "ttt"
 
 class MediaServer(log.Loggable):
     '''
@@ -111,6 +121,10 @@ class MediaServer(log.Loggable):
         kwargs['content']= content
         kwargs['urlbase'] = coherence.hostname
         kwargs['transcoding'] = settings.transcoding
+        kwargs['icons'] = [
+                           {'url': "file://"+os.path.abspath("logo2.png"),
+                            'mimetype' : 'image/png'}
+                           ,]
         if settings.enable_inotify == 0:
             kwargs['enable_inotify'] = "no" 
         else: 
@@ -133,9 +147,11 @@ print sys.path
 dbCursor = DBCursor(db_path=dbpath)
 
 dbCursor.begin(dbpath, False)
-dbCursor.insert(DBContent("/home/xps/Wideo/test"))
-dbCursor.insert(DBSettings("GreatServer", create_uuid(), 'no', 'yes', None, 0, True, 300))
+#dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+#dbCursor.insert(DBSettings("GreatServer", create_uuid(), 'no', 'yes', None, 0, True, 300))
 
+#jsonServer = SocketServer()
+#jsonServer.start()
 
 mediaServer = MediaServer(dbCursor)
 reactor.callWhenRunning(mediaServer.run)

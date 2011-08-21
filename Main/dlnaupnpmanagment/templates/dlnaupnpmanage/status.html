@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<title>TEST</title>
+		<style type="text/css">
+			h1 {
+				background: #C0C0C0;
+				padding: 20px;
+			}
+			div.update {
+				width: 90%;
+				padding: 5px;
+			}
+			div.even {
+				background: #ddd;
+			}
+			div.timestamp {
+				float: left;
+				font-weight: bold;
+			}
+			div.text {
+				float: left;
+				padding-left: 10px;
+			}
+			div.clear {
+				clear: both;
+				height: 1px;
+			}
+		</style>
+		
+		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
+		<script type="text/javascript" language="javascript">
+			
+			
+			
+			function createmenu(){
+				var menu = [
+				['Status',				'status'],
+				['Settings',			'settings'],
+				['Media',			'javascript:alert("test2")'],
+				];
+				
+				var content = [];
+				
+				for (i = 0; i< menu.length; ++i){
+					var item = menu[i];
+					if (!item){
+						//jQuery('<br />').appendTo('#menu');
+						content.push('<br />');
+					}
+					if (item.length == 2){
+						jQuery('<a/>', {
+						    class: 'indent1',
+						    href: item[1],
+						    title: item[0],
+						    text: item[0]
+						}).appendTo('#menu');
+						//content.push(
+						
+						//content.push('<a href="' + item[1] + '" class="indent1">' + item[0] + '</a>');
+					}
+				}
+				//document.write(content.join(''));
+			}
+			
+			function cleanall(){
+				update_holder = $("#update-holder");
+				update_holder.empty();
+			}
+			
+			function update(){
+				update_holder = $("#update-holder");
+				if (update_holder.length == 0){
+					main_holder = $("#main-holder");
+					update_holder = jQuery('<div/>',{
+						id: 'update-holder'
+					}).appendTo(main_holder);
+				}
+				
+				most_recent = update_holder.find("div:first");
+				$.getJSON("update", function(data){
+					cycle_class = most_recent.hasClass('odd') ? "even" : "odd";
+					id = parseInt(most_recent.attr('id'))
+					if (isNaN(id)){
+						id = 0
+					}
+					else {
+						id += 1;
+					}
+					jQuery.each(data, function() {
+								//alert(cycle_class);
+								some_string = '<div id="'+id+'" class="update ' + cycle_class
+									+ '"><div class="timestamp">'
+									+ this.fields.timestamp
+									+ '</div><div class="text">'
+									+ this.fields.body + " " + id
+									+ '</div><div class="clear"></div></div>';
+								//alert(some_string);
+								update_holder.prepend(some_string);
+							cycle_class = (cycle_class == "odd")? "even" : "odd";
+							});
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<form>
+			<table id="maintable" cellspacing="0">
+				<tr id="maintablehead">
+					<td id="header" colspan="2">
+						<table id="htable" cellspacing="0">
+							<tr>
+								<td id="text">
+									<div class="title">DLNA UPNP SERVER</div>
+									<div class="version">VERSION TO GET</div>
+								</td>
+								<td class="logo">
+									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+								</td>
+							</tr>
+						</table>
+						
+					</td>
+				</tr>
+				<tr id="body">
+					<td id="menu">
+						<h1>MENU</h1>
+ 						<script type="text/javascript">createmenu()</script>
+					</td>
+					<td id="content">
+						<p>Autorefreshing is enabled</p>
+						<div id="main-holder">
+							{% if object_list %}
+								<div id="updat1e-holder">
+									{% for object in object_list %}
+									<div class="update {% cycle even, odd %}" id="{{ object.id }}">
+										<div class="timestamp">
+											{{ object.timestamp|date:"Y-m-d H:i:s" }}
+										</div>
+										<div class="text">
+											{{ object.body|linebreaksbr }}
+										</div>
+										<div class="clear"></div>
+									</div>
+									{% endfor %}
+								</div>
+							{% else %}
+								<p>No updates</p>
+							{% endif %}
+							<br />
+							<a href="javascript:update()">CLICK</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</body>
+</html>

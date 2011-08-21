@@ -61,7 +61,7 @@ class TwistedSocketNotifier(QSocketNotifier):
         self.watcher = watcher
         self.fn = None
         if type == QSocketNotifier.Read:
-            self.fn = self.read
+            self.fn = self._read
         elif type == QSocketNotifier.Write:
             self.fn = self.write
         QObject.connect(self, SIGNAL("activated(int)"), self.fn)
@@ -74,7 +74,7 @@ class TwistedSocketNotifier(QSocketNotifier):
         self.deleteLater()
 
 
-    def read(self, sock):
+    def _read(self, sock):
         w = self.watcher
         #self.setEnabled(False)    # ??? do I need this?            
         def _read():

@@ -41,10 +41,10 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         self.test = test
         if self.test == False:
             try:
-                self.port = reactor.listenMulticast(SSDP_PORT, self, listenMultiple=True)
-                #self.port.setLoopbackMode(1)
+                self._port = reactor.listenMulticast(SSDP_PORT, self, listenMultiple=True)
+                #self._port.setLoopbackMode(1)
 
-                self.port.joinGroup(SSDP_ADDR,interface=interface)
+                self._port.joinGroup(SSDP_ADDR,interface=interface)
 
                 self.resend_notify_loop = task.LoopingCall(self.resendNotify)
                 self.resend_notify_loop.start(777.0, now=False)
@@ -180,7 +180,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
 
     def discoveryRequest(self, headers, (host, port)):
         """Process a discovery request.  The response must be sent to
-        the address specified by (host, port)."""
+        the address specified by (host, _port)."""
 
         self.info('Discovery request from (%s,%d) for %s' % (host, port, headers['st']))
         self.info('Discovery request for %s' % headers['st'])

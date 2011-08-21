@@ -22,16 +22,28 @@ def index(request):
             search_for_db(request.session.session_key)
         elif list_db[0].session_id != request.session.session_key:
             search_for_db(request.session.session_key)
-        return object_list(request, all_list, template_name='dlnaupnpmanage/blogpost_list.html')
-        #temp = 'dlnaupnpmanage/blogpost_list.html'
-        
-        #return render_to_response(temp, all_list, context_instance = RequestContext(request))
+        return object_list(request, all_list, template_name='dlnaupnpmanage/status.html')
+
+def settings(request):
+    if request.is_ajax():
+        print "index"
+    else:
+        from django.views.generic import list_detail
+        all_list = BlogPost.objects.all()
+        return object_list(request, all_list, template_name='dlnaupnpmanage/settings.html')
     
 def update(request):
+    
+    
     print "update"
     response = HttpResponse()
     response['Content-Type'] = "text/javascript"
-    response.write(serializers.serialize("json", BlogPost.objects.all()))
+    json = serializers.serialize("json", BlogPost.objects.all())
+    #from JSONRPCServer import JsonClient
+    #client = JsonClient()
+    #client.connect()
+    #client.sendObject(json)
+    response.write(json)
     all_list = DBContainer.objects.all()
     if len(all_list) == 0:
         DBContainer.create()

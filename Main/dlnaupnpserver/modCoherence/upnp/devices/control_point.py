@@ -181,7 +181,7 @@ class ControlPoint(log.Loggable):
 
         try:
             f = open(path)
-            data = f.read()
+            data = f._read()
             f.close()
             headers= {
                 "Content-Type": "application/octet-stream",

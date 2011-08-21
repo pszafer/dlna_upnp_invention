@@ -123,10 +123,10 @@ class WebServer(log.Loggable):
         except ImportError:
             self.site = Site(SimpleRoot(coherence))
 
-        self.port = reactor.listenTCP( port, self.site)
-        coherence.web_server_port = self.port._realPortNumber
+        self._port = reactor.listenTCP( port, self.site)
+        coherence.web_server_port = self._port._realPortNumber
         # XXX: is this the right way to do it?
-        self.warning( "WebServer on port %d ready" % coherence.web_server_port)
+        self.warning( "WebServer on _port %d ready" % coherence.web_server_port)
 
 
 class Plugins(log.Loggable):
@@ -338,7 +338,7 @@ class Coherence(log.Loggable):
         try:
             self.web_server = WebServer( self.config.get('web-ui',None), self.web_server_port, self)
         except CannotListenError:
-            self.warning('port %r already in use, aborting!' % self.web_server_port)
+            self.warning('_port %r already in use, aborting!' % self.web_server_port)
             reactor.stop()
             return
 
@@ -538,17 +538,17 @@ class Coherence(log.Loggable):
             self.active_backends = {}
             """ send service unsubscribe messages """
             try:
-                if self.web_server.port != None:
-                    self.web_server.port.stopListening()
-                    self.web_server.port = None
+                if self.web_server._port != None:
+                    self.web_server._port.stopListening()
+                    self.web_server._port = None
                 if hasattr(self.msearch, 'double_discover_loop'):
                     self.msearch.double_discover_loop.stop()
-                if hasattr(self.msearch, 'port'):
-                    self.msearch.port.stopListening()
+                if hasattr(self.msearch, '_port'):
+                    self.msearch._port.stopListening()
                 if hasattr(self.ssdp_server, 'resend_notify_loop'):
                     self.ssdp_server.resend_notify_loop.stop()
-                if hasattr(self.ssdp_server, 'port'):
-                    self.ssdp_server.port.stopListening()
+                if hasattr(self.ssdp_server, '_port'):
+                    self.ssdp_server._port.stopListening()
                 #self.renew_service_subscription_loop.stop()
             except:
                 pass

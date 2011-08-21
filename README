@@ -28,6 +28,25 @@ DLNA UPNP Server is known to work with:
    - Totem,
    - Rhytmbox,
    - Phillips TVs with UPNP protocol (don't know about new series with DLNA),
+
+Version
+========================
+DLNA UPNP Media Server is still underdevelopment.
+Probably it would never reach version 1.0
+
+
+Current version: 0.8
+
+Job to reach version: 0.9
+List:
+- django webserver fully working
+- full working on sqlite3 database				| done
+- make rest service to communicate django <-> mediaserver
+- add logging, so users can notify problems,
+- transcoding,
+- customized logo
+- main logo							| done
+- other small changes
    
 
 Installation

@@ -352,7 +352,7 @@ class DeviceImportWidget(object):
                     for icon in r:
                         ###FIXME, we shouldn't just use the first icon
                         icon_loader = gtk.gdk.PixbufLoader()
-                        icon_loader.write(urllib.urlopen(str(icon['url'])).read())
+                        icon_loader.write(urllib.urlopen(str(icon['url']))._read())
                         icon_loader.close()
                         icon = icon_loader.get_pixbuf()
                         icon = icon.scale_simple(16,16,gtk.gdk.INTERP_BILINEAR)
@@ -484,7 +484,7 @@ class TreeWidget(object):
                         if(content_format == 'image/jpeg' and
                            'DLNA.ORG_PN=JPEG_TN' in additional_info.split(';')):
                             icon_loader = gtk.gdk.PixbufLoader()
-                            icon_loader.write(urllib.urlopen(str(res.data)).read())
+                            icon_loader.write(urllib.urlopen(str(res.data))._read())
                             icon_loader.close()
                             icon = icon_loader.get_pixbuf()
                             tooltip.set_icon(icon)
@@ -624,7 +624,7 @@ class TreeWidget(object):
                     for icon in r:
                         ###FIXME, we shouldn't just use the first icon
                         icon_loader = gtk.gdk.PixbufLoader()
-                        icon_loader.write(urllib.urlopen(str(icon['url'])).read())
+                        icon_loader.write(urllib.urlopen(str(icon['url']))._read())
                         icon_loader.close()
                         icon = icon_loader.get_pixbuf()
                         icon = icon.scale_simple(16,16,gtk.gdk.INTERP_BILINEAR)

@@ -227,7 +227,7 @@ class FileDownloader(object):
         """Verify a URL is valid and data could be downloaded. Return real data URL."""
         request = urllib2.Request(url, None, std_headers)
         data = urllib2.urlopen(request)
-        data.read(1)
+        data._read(1)
         url = data.geturl()
         data.close()
         return url
@@ -783,7 +783,7 @@ class MetacafeIE(InfoExtractor):
         request = urllib2.Request(self._DISCLAIMER, None, std_headers)
         try:
             self.report_disclaimer()
-            disclaimer = urllib2.urlopen(request).read()
+            disclaimer = urllib2.urlopen(request)._read()
         except (urllib2.URLError, httplib.HTTPException, socket.error), err:
             self._downloader.trouble(u'ERROR: unable to retrieve disclaimer: %s' % str(err))
             return
@@ -796,7 +796,7 @@ class MetacafeIE(InfoExtractor):
         request = urllib2.Request(self._FILTER_POST, urllib.urlencode(disclaimer_form), std_headers)
         try:
             self.report_age_confirmation()
-            disclaimer = urllib2.urlopen(request).read()
+            disclaimer = urllib2.urlopen(request)._read()
         except (urllib2.URLError, httplib.HTTPException, socket.error), err:
             self._downloader.trouble(u'ERROR: unable to confirm age: %s' % str(err))
             return
@@ -823,7 +823,7 @@ class MetacafeIE(InfoExtractor):
         request = urllib2.Request('http://www.metacafe.com/watch/%s/' % video_id)
         try:
             self.report_download_webpage(video_id)
-            webpage = urllib2.urlopen(request).read()
+            webpage = urllib2.urlopen(request)._read()
         except (urllib2.URLError, httplib.HTTPException, socket.error), err:
             self._downloader.trouble(u'ERROR: unable retrieve video webpage: %s' % str(err))
             return
@@ -937,7 +937,7 @@ class YoutubeSearchIE(InfoExtractor):
             result_url = self._TEMPLATE_URL % (urllib.quote_plus(query), pagenum)
             request = urllib2.Request(result_url, None, std_headers)
             try:
-                page = urllib2.urlopen(request).read()
+                page = urllib2.urlopen(request)._read()
             except (urllib2.URLError, httplib.HTTPException, socket.error), err:
                 self._downloader.trouble(u'ERROR: unable to download webpage: %s' % str(err))
                 return
@@ -1002,7 +1002,7 @@ class YoutubePlaylistIE(InfoExtractor):
             self.report_download_page(playlist_id, pagenum)
             request = urllib2.Request(self._TEMPLATE_URL % (playlist_id, pagenum), None, std_headers)
             try:
-                page = urllib2.urlopen(request).read()
+                page = urllib2.urlopen(request)._read()
             except (urllib2.URLError, httplib.HTTPException, socket.error), err:
                 self._downloader.trouble(u'ERROR: unable to download webpage: %s' % str(err))
                 return
@@ -1160,7 +1160,7 @@ if __name__ == '__main__':
                 batchurls = [x.strip() for x in batchurls]
                 batchurls = [x for x in batchurls if len(x) > 0]
             except IOError:
-                sys.exit(u'ERROR: batch file could not be read')
+                sys.exit(u'ERROR: batch file could not be _read')
         all_urls = batchurls + args
 
         # Conflicting, missing and erroneous options

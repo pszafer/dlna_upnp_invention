@@ -8,12 +8,15 @@ from django.conf import settings
 from dlnaupnpmanagment import dlnaupnpmanage
 from dlnaupnpmanagment.dlnaupnpmanage.models import BlogPost
 from django.views.generic import list_detail
+from django.views.generic.simple import redirect_to
 admin.autodiscover()
 
 urlpatterns = patterns('',
     # Example:
     url(r'^dlnaupnpmanagment/index', direct_to_template, {'template': 'dlnaupnpmanage/index.html'}),
-    url(r'^dlnaupnpmanagment/$', 'dlnaupnpmanagment.dlnaupnpmanage.views.index'),
+    url(r'^dlnaupnpmanagment/$', redirect_to, {'url': '/dlnaupnpmanagment/status'}),
+    url(r'^dlnaupnpmanagment/status', 'dlnaupnpmanagment.dlnaupnpmanage.views.index'),
+    url(r'^dlnaupnpmanagment/settings', 'dlnaupnpmanagment.dlnaupnpmanage.views.settings'),
     url(r'^dlnaupnpmanagment/update', 'dlnaupnpmanagment.dlnaupnpmanage.views.update'),
     url(r'^dlnaupnpmanagment/runserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.run_server'),
     url(r'^dlnaupnpmanagment/iii', list_detail.object_list, {'queryset' : BlogPost.objects.all()}),

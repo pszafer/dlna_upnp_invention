@@ -35,8 +35,8 @@ class UPnPPublisher(resource.Resource, log.Loggable):
     encoding = "UTF-8"
     envelope_attrib = None
 
-    def _sendResponse(self, request, response, status=200):
-        self.debug('_sendResponse', status, response)
+    def sendResponse(self, request, response, status=200):
+        self.debug('sendResponse', status, response)
         if status == 200:
             request.setResponseCode(200)
         else:
@@ -55,7 +55,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
 
     def _methodNotFound(self, request, methodName):
         response = soap_lite.build_soap_error(401)
-        self._sendResponse(request, response, status=401)
+        self.sendResponse(request, response, status=401)
 
     def _gotResult(self, result, request, methodName, ns):
         self.debug('_gotResult', result, request, methodName, ns)
@@ -64,7 +64,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
                                                 is_response=True,
                                                 encoding=None)
         #print "SOAP-lite response", response
-        self._sendResponse(request, response)
+        self.sendResponse(request, response)
 
     def _gotError(self, failure, request, methodName, ns):
         self.info('_gotError', failure, failure.value)
@@ -77,7 +77,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
             failure.printTraceback()
 
         response = soap_lite.build_soap_error(status)
-        self._sendResponse(request, response, status=status)
+        self.sendResponse(request, response, status=status)
 
     def lookupFunction(self, functionName):
         function = getattr(self, "soap_%s" % functionName, None)
@@ -90,7 +90,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
 
     def render(self, request):
         """Handle a SOAP command."""
-        data = request.content.read()
+        data = request.content._read()
         headers = request.getAllHeaders()
         self.info('soap_request:', headers)
 

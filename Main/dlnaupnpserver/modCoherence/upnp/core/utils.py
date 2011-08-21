@@ -206,7 +206,7 @@ def de_chunk_payload(response):
 
     len = read_chunk_length()
     while (len > 0):
-        newresponse.write(response.read(len))
+        newresponse.write(response._read(len))
         line = response.readline() # after chunk and before next chunk length
         len = read_chunk_length()
 
@@ -380,8 +380,8 @@ class ReverseProxyResource(proxy.ReverseProxyResource):
         @param host: the host of the web server to proxy.
         @type host: C{str}
 
-        @param port: the port of the web server to proxy.
-        @type port: C{port}
+        @param _port: the _port of the web server to proxy.
+        @type _port: C{_port}
 
         @param path: the base path to fetch data from. Note that you shouldn't
             put any trailing slashes in it, it will be added automatically in
@@ -391,25 +391,25 @@ class ReverseProxyResource(proxy.ReverseProxyResource):
         """
         resource.Resource.__init__(self)
         self.host = host
-        self.port = port
+        self._port = port
         self.path = path
         self.qs = ''
         self.reactor = reactor
 
     def getChild(self, path, request):
         return ReverseProxyResource(
-            self.host, self.port, self.path + '/' + path)
+            self.host, self._port, self.path + '/' + path)
 
     def render(self, request):
         """
         Render a request by forwarding it to the proxied server.
         """
-        # RFC 2616 tells us that we can omit the port if it's the default port,
+        # RFC 2616 tells us that we can omit the _port if it's the default _port,
         # but we have to provide it otherwise
-        if self.port == 80:
+        if self._port == 80:
             request.received_headers['host'] = self.host
         else:
-            request.received_headers['host'] = "%s:%d" % (self.host, self.port)
+            request.received_headers['host'] = "%s:%d" % (self.host, self._port)
         request.content.seek(0, 0)
         qs = urlparse.urlparse(request.uri)[4]
         if qs == '':
@@ -420,13 +420,13 @@ class ReverseProxyResource(proxy.ReverseProxyResource):
             rest = self.path
         clientFactory = self.proxyClientFactoryClass(
             request.method, rest, request.clientproto,
-            request.getAllHeaders(), request.content.read(), request)
-        self.reactor.connectTCP(self.host, self.port, clientFactory)
+            request.getAllHeaders(), request.content._read(), request)
+        self.reactor.connectTCP(self.host, self._port, clientFactory)
         return server.NOT_DONE_YET
 
     def resetTarget(self,host,port,path,qs=''):
         self.host = host
-        self.port = port
+        self._port = port
         self.path = path
         self.qs = qs
 
@@ -877,7 +877,7 @@ class BufferFileTransfer(object):
         #print "resumeProducing", self.request,self.size,self.written
         if not self.request:
             return
-        data = self.file.read(min(abstract.FileDescriptor.bufferSize, self.size - self.written))
+        data = self.file._read(min(abstract.FileDescriptor.bufferSize, self.size - self.written))
         if data:
             self.written += len(data)
             # this .write will spin the reactor, calling .doWrite and then
