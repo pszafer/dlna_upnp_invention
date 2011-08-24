@@ -15,6 +15,7 @@ from storm.locals import Store, Int, Unicode
 from storm.database import create_database
 from storm.exceptions import IntegrityError
 import os
+from storm.expr import Update
 
 TABLES = ["media", "settings"]
 database = None
@@ -55,6 +56,18 @@ class DBSettings(object):
         self.port = port
         self.enable_inotify = int(enable_inotify)
         self.max_child_items = int(max_child_items)
+    
+    def getjson(self):
+        dict = {}
+        dict['name'] = self.name
+        dict['uuid'] = self.uuid
+        dict['transcoding'] = self.transcoding
+        dict['do_mimetype_container'] = self.do_mimetype_container 
+        dict['ip_addr'] = self.ip_addr 
+        dict['port'] = self.port 
+        dict['enable_inotify'] = self.enable_inotify
+        dict['max_child_items'] = self.max_child_items
+        return dict
 
 class DBIgnorePatterns(object):
     __storm_table__ = "ignorepatterns"
@@ -83,20 +96,29 @@ class DBCursor(object):
     Cursor to work with sqlite3 database
     '''
     
+    
     def __init__(self, db_path=None):
+        
         self.db_path = db_path
+        self.isClosed = False
+        self.connect2DB(db_path)
     
     def load_db(self, uri):
         global database
-        global store
-        
+        global tlocal
+        import threading
+        tlocal = threading.local()
         if not store:
             database = create_database(uri)
-            store = Store(database)
-        return store
+            tlocal.store = Store(database)
+        if self.isClosed:
+            database = create_database(uri)
+            tlocal.store = Store(database)
+            self.isClose = False
+        return tlocal.store
     
     def create_table(self, tablename, variables):
-        store.execute("CREATE TABLE IF NOT EXISTS " + tablename + " " + variables)
+        tlocal.store.execute("CREATE TABLE IF NOT EXISTS " + tablename + " " + variables)
         
     def create_table_settings(self):
         tablename = "settings"
@@ -123,12 +145,12 @@ class DBCursor(object):
         
     def clear_db(self):
         #for table in TABLES:
-        store.find(DBSettings).remove()
+        tlocal.store.find(DBSettings).remove()
         
     
-    def begin(self, db_filename, clearTable=False):
+    def connect2DB(self, db_filename, clearTable=False):
         self.db_path = os.path.abspath(db_filename)
-        store = self.load_db("sqlite:"+db_filename)
+        tlocal.store = self.load_db("sqlite:"+db_filename)
         self.create_table_settings()
         self.create_table_content()
         self.create_table_ignore_patterns()
@@ -138,8 +160,8 @@ class DBCursor(object):
     
     def insert(self, object):
         try:
-            store.add(object)
-            store.commit()
+            tlocal.store.add(object)
+            tlocal.store.commit()
         except IntegrityError:
             pass
     
@@ -153,11 +175,17 @@ class DBCursor(object):
             table = DBIgnorePatterns()
         if not condition:
             if single:
-                return store.find(type(table)).any()
+                return tlocal.store.find(type(table)).any()
             else:
-                return store.find(type(table))
+                return tlocal.store.find(type(table))
         else:
             if single:
-                return store.find(type(table), condition).any()
+                return tlocal.store.find(type(table), condition).any()
             else:
-                return store.find(type(table), condition)
+                return tlocal.store.find(type(table), condition)
+            
+    def close_connection(self):
+        Store.close(tlocal.store)
+        self.isClosed = True
+    def commit(self):
+        tlocal.store.commit()

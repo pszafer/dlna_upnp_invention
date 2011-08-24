@@ -11,20 +11,17 @@ Created on 08-07-2011
 '''
 #import Database
 #from Database import DBCursor, DBSettings
-from Database import DBCursor, DBSettings, DBContent
+from Database2 import DBCursor, DBSettings, DBContent
 
 from modCoherence import log
 import sys
 import os.path
-from JSONRPCServer import ThreadedJsonServer
-
-def create_uuid():
-        '''
-        Create Your own uuid
-        TODO: change to run this once and then get from db
-        '''
-        import uuid
-        return uuid.uuid4()
+from JSONRPCServer import JsonRpcApp
+import webob
+from backendobject import BackendObject
+from threading import Thread, Lock
+import threading
+import thread
 
 def write_settings_to_file(external_address, media_db_path):
     file = open(".settings.dat", "w")
@@ -33,14 +30,14 @@ def write_settings_to_file(external_address, media_db_path):
     file.write(str(media_db_path).encode("hex"))
     file.close()
 
-class SocketServer(ThreadedJsonServer):
-    def __init__(self):
-        super(SocketServer, self).__init__()
-        self.timeout = 2.0
-    def processMessage(self, obj):
-        if obj != '':
-            if obj['message'] == "new connection":
-                print "ttt"
+#class SocketServer(ThreadedJsonServer):
+#    def __init__(self):
+#        super(SocketServer, self).__init__()
+#        self.timeout = 2.0
+#    def processMessage(self, obj):
+#        if obj != '':
+#            if obj['message'] == "new connection":
+#                print "ttt"
 
 class MediaServer(log.Loggable):
     '''
@@ -49,28 +46,36 @@ class MediaServer(log.Loggable):
     logType = 'dlna_upnp_MediaServer'
     
     
-    def __init__(self, dbCursor = None):
+    def __init__(self, backendObject=None, lock=None):
         self.coherence = None
-        if dbCursor is None:
-            self.dbCursor = DBCursor()
-        else:
-            self.dbCursor = dbCursor
+        self.backendObject = backendObject
+        self.lock = lock
+        self.lock.acquire()
+    
     def run(self):
         '''
         Create coherence and run media server
         '''
         #reactor install
-        settings = self.dbCursor.select("settings", "id=1", True)
-        self.coherence = self.get_coherence(settings.ip_addr, settings.port, settings.transcoding)
+        settings = self.backendObject.get_settings()
+        md = self.backendObject.get_content()
+        content = []
+        for con in md:
+            content.append(con.content)
+        if len(content) == 0:
+            self.lock.release()
+            self.error('Content is empty. Nothing to share')
+            return
+        self.coherence = self.get_coherence(settings.ip_addr, None, settings.transcoding)
         #self.dbCursor = dbCursor
         if self.coherence is None:
+            self.lock.release()
             self.error("None Coherence")
             return
         self.warning("RUNNING")
-        self.server = self.create_MediaServer(self.coherence, settings)
-    
-    
-    
+        self.server = self.create_MediaServer(self.coherence, md, content, settings)
+        self.backendObject.close_connection_to_db()
+        self.lock.release()
     def get_coherence(self, ip_addr, port, transcoding="no"):
         '''
         Create instance of Coherence
@@ -91,10 +96,11 @@ class MediaServer(log.Loggable):
         if ip_addr:
             coherence_config['interface'] = ip_addr
         coherence_instance = Coherence(coherence_config)
-        write_settings_to_file(coherence_instance.external_address, self.dbCursor.db_path)
+        self.backendObject.set_ip(coherence_instance.hostname)
+        self.backendObject.set_port(coherence_instance.web_server_port)
         return coherence_instance
     
-    def create_MediaServer(self, coherence, settings):
+    def create_MediaServer(self, coherence, dbContent, content, settings):
         '''
         Run MediaStore and Coherence server
         @param coherence:coherence instance from get_coherence
@@ -106,19 +112,15 @@ class MediaServer(log.Loggable):
         
         
         kwargs = {}
-        kwargs['uuid'] = settings.uuid
-        uuid = str(kwargs['uuid'])
-        kwargs['uuid'] = uuid
+        kwargs['settings'] = settings
+        kwargs['uuid'] = str(settings.uuid)
         self.warning("MediaServer run, what I got: %r", kwargs)
         name = settings.name
         if name:
             name = name.replace('{host}', coherence.hostname)
-            kwargs['name'] = name
-        md = self.dbCursor.select("content", single = False)
-        content = []
-        for con in md:
-            content.append(con.content)
+            kwargs['name'] = "test"
         kwargs['content']= content
+        kwargs['dbContent'] = dbContent
         kwargs['urlbase'] = coherence.hostname
         kwargs['transcoding'] = settings.transcoding
         kwargs['icons'] = [
@@ -131,28 +133,69 @@ class MediaServer(log.Loggable):
             kwargs['enable_inotify'] = "yes"
         kwargs['do_mimetype_container'] =  settings.do_mimetype_container
         kwargs['max_child_items'] = settings.max_child_items
+        kwargs['backendObject'] = self.backendObject
         server = CoherenceMediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
+class Runserver(threading.Thread):
     
-  
+    def __init__(self, mediaServer):
+        self.mediaServer = mediaServer
+        threading.Thread.__init__(self)
         
-from twisted.internet import reactor
+    def run(self):
+        from twisted.internet import reactor
+        reactor.callWhenRunning(self.mediaServer.run)
+        reactor.run(installSignalHandlers=0)
+
+class RunRPCServer():
+    def __init__(self, backendObject):
+        self.backendObject = backendObject
+    def run(self):
+        import optparse
+        from wsgiref import simple_server
+        parser = optparse.OptionParser(
+            usage="%prog [OPTIONS] MODULE:EXPRESSION")
+        parser.add_option(
+            '-p', '--port', default='7777',
+            help='Port to serve on (default 7777)')
+        parser.add_option(
+            '-H', '--host', default='127.0.0.1',
+            help='Host to serve on (default localhost; 0.0.0.0 to make public)')
+        options, args = parser.parse_args()
+        #if not args or len(args) > 1:
+        #    print 'You must give a single object reference'
+        #    parser.print_help()
+        #    sys.exit(2)
+        app = JsonRpcApp(self.backendObject)
+        server = simple_server.make_server(
+            options.host, int(options.port),
+            app)
+        print 'Serving on http://%s:%s' % (options.host, options.port)
+        self.backendObject.set_name("buuu")
+        server.serve_forever() 
 path_to_db = "media.db"
 dbpath = os.path.abspath(path_to_db)
-PROJECT_DIR = os.path.normpath(os.path.dirname(__file__))
-new_dir, _ = os.path.split(PROJECT_DIR)
-print sys.path
-sys.path.insert(0, new_dir)
-print sys.path
+lock = Lock()
+
 dbCursor = DBCursor(db_path=dbpath)
+dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+backendObject = BackendObject(dbCursor, "test")
 
-dbCursor.begin(dbpath, False)
-#dbCursor.insert(DBContent("/home/xps/Wideo/test"))
-#dbCursor.insert(DBSettings("GreatServer", create_uuid(), 'no', 'yes', None, 0, True, 300))
 
-#jsonServer = SocketServer()
-#jsonServer.start()
+#
+#backendObject.close_connection_to_db()
+mediaServer = MediaServer(backendObject=backendObject, lock=lock)
+s = Runserver(mediaServer)
+s.start()
 
-mediaServer = MediaServer(dbCursor)
-reactor.callWhenRunning(mediaServer.run)
-reactor.run()
+lock.acquire()
+try:
+    r = RunRPCServer(backendObject)
+    r.run()
+finally:
+    lock.release()
+
+
+
+
+

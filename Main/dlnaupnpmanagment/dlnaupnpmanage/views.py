@@ -1,37 +1,105 @@
 # Create your views here.
-from dlnaupnpmanagment.dlnaupnpmanage.models import BlogPost, DBContainer
-from django.template import loader
-from django.template.context import Context, RequestContext
-from django.http import HttpResponse, HttpResponseServerError
+from dlnaupnpmanagment.dlnaupnpmanage.models import DBContainer, BlogPost
+from django.http import HttpResponse, HttpResponseServerError, HttpRequest
 from django.core import serializers
 from django.shortcuts import render_to_response
 from twisted.internet import reactor
 import subprocess
 from ccm.Settings import Setting
 from django.views.generic.list_detail import object_list
+from django.template import RequestContext
 
 def index(request):
     if request.is_ajax():
         print "index"
     else:
-        
         from django.views.generic import list_detail
         all_list = BlogPost.objects.all()
         list_db = DBContainer.objects.all()
-        if len(list_db) == 0:
-            search_for_db(request.session.session_key)
-        elif list_db[0].session_id != request.session.session_key:
-            search_for_db(request.session.session_key)
         return object_list(request, all_list, template_name='dlnaupnpmanage/status.html')
 
-def settings(request):
+def serverstatus(request):
     if request.is_ajax():
-        print "index"
+        try:
+            json = dict(method="echo",id=None,params=[])
+            from webob import Request as Requ
+            req = Requ.blank("http://localhost:7777/")
+            req.method = 'POST'
+            req.content_type = 'application/json'
+            from simplejson import loads, dumps
+            req.body = dumps(json)
+            from wsgiproxy.exactproxy import proxy_exact_request
+            resp = req.get_response(proxy_exact_request)
+            json = loads(resp.body)
+            all_list = json['result']
+            response = HttpResponse()
+            response['Content-Type'] = "application/json"
+            response.write(dumps(all_list))
+            return response
+        except Exception, e:
+            response = HttpResponse()
+            response['Content-Type'] = "application/json"
+            response.write("{\"Status\":\"Failed\"}")
+            return response
+
+def settings(request):
+    try:
+        json = dict(method="get_settings",id=None,params=[])
+        from webob import Request as Requ
+        req = Requ.blank("http://localhost:7777/")
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        from simplejson import loads, dumps
+        req.body = dumps(json)
+        from wsgiproxy.exactproxy import proxy_exact_request
+        resp = req.get_response(proxy_exact_request)
+        json = loads(resp.body)
+        all_list = json['result']
+        DBContainer.objects.all().delete()
+        dbContainer = DBContainer(ip_address=all_list['ip_addr'], 
+                                  created=True, 
+                                  session_id=request.session.session_key,
+                                  port = all_list['port'],
+                                  name = all_list['name'],
+                                  uuid = all_list['uuid'],
+                                  do_mimetype_container = all_list['do_mimetype_container'],
+                                  transcoding = all_list['transcoding'],
+                                  enable_inotify= all_list['enable_inotify']
+                                  )
+        dbContainer.save()
+    except Exception, e:
+        pass
+    if request.is_ajax():
+        response = HttpResponse()
+        response['Content-Type'] = "text/javascript"
+        response.write(all_list)
+        return response
     else:
-        from django.views.generic import list_detail
-        all_list = BlogPost.objects.all()
-        return object_list(request, all_list, template_name='dlnaupnpmanage/settings.html')
-    
+        from django.utils import simplejson as simplejs
+        entries = DBContainer.objects.all().values().get()
+        del entries['uuid']
+        del entries['created']
+        
+        t = 'dlnaupnpmanage/settings.html'
+        return render_to_response(t, entries, context_instance=RequestContext(request))
+
+def setname(request):
+    json = dict(method="add_content",id=None,params=["/home/xps/Wideo/test/"])
+    from webob import Request as Requ
+    req = Requ.blank("http://localhost:7777/")
+    req.method = 'POST'
+    req.content_type = 'application/json'
+    from simplejson import loads, dumps
+    req.body = dumps(json)
+    from wsgiproxy.exactproxy import proxy_exact_request
+    resp = req.get_response(proxy_exact_request)
+    json = loads(resp.body)
+    all_list = json['result']
+    response = HttpResponse()
+    response['Content-Type'] = "text/javascript"
+    response.write(all_list)
+    return response
+
 def update(request):
     
     

@@ -63,6 +63,39 @@ def raw_generate(fn):
         im.save(buf, imghdr.what(fn))
         return buf.getvalue()
 
+class Subscriber:
+    def __init__(self, parent):
+        self.parent = parent
+
+    def notify(self):
+        pass
+
+
+class ContentObserver(Subscriber):
+        
+    def notify(self,postname):
+        if postname == True:
+            _content = self.parent.backendObject.get_content()
+            content = []
+            for con in _content:
+                if not os.path.isdir(con.content):
+                    self.parent.backendObject.removeObject(con)
+                content.append(con.content)
+            content = Set([os.path.abspath(x) for x in content])
+            if content is self.parent.content:
+                self.info("Content didn't change")
+                return
+            else:
+                self.parent.store.clear()
+                self.parent.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
+                self.parent.createContainer("directories",  parent = self.parent.store[str(0)], path=_("Directories"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['imageItem'] = self.parent.createContainer("Image", parent = self.store[str(0)], path=_("Image"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['audioItem'] = self.parent.createContainer("Audio", parent = self.store[str(0)], path=_("Audio"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['videoItem'] = self.parent.createContainer("Video", parent = self.store[str(0)], path=_("Video"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+                self.parent.update_id += 1;
+                self.parent.searchInContentPath(self.parent.content)
+                self.info("Added new content")
+            pass
 
 class MediaItem(BackendItem):   
     logCategory = 'smewt_media_store'
@@ -509,16 +542,30 @@ class MediaItem(BackendItem):
         except Exception as inst:
             print inst
 
+def log(event):
+    print '%s was written' % event.subject
+
 class MediaStore(BackendStore):
     logType = 'dlna_upnp_MediaStore'
     implements = ['MediaServer']
     
     def __init__(self, server, **kwargs):
         BackendStore.__init__(self, server, **kwargs)
+        self.settings = kwargs.get('settings', None)
+        try:
+            if self.settings is not None:
+                self.name = self.settings.name
+            else:
+                self.name = kwargs.get('name', 'Media')
+        except KeyError:
+            self.name = "SERVER UPNP"
         self.next_id = 0
         self.warning("MediaStore init, what I got: %r", kwargs)
-        self.name = kwargs.get('name', 'Media')
-        self.content = kwargs.get('content',None)
+        backendObject = kwargs.get('backendObject', None)
+        notifyClass = ContentObserver(parent=self)
+        if backendObject:
+            self.backendObject = backendObject
+        self.content = kwargs.get('dbContent',None)
         self.store = {}
         self.containers_map = {}
         self.inotify = None
@@ -532,14 +579,18 @@ class MediaStore(BackendStore):
                 self.info("%s" %no_inotify_reason)
         else:
             self.info("FSStore content auto-update disabled upon user request")
-        if self.content != None:
-            if(isinstance(self.content, basestring)):
-                self.content = [self.content]
-            l = []
-            for i in self.content:
-                l += i.split(',')
-            self.content = l
-        self.content = Set([os.path.abspath(x) for x in self.content])
+#        if self.content != None:
+#            if(isinstance(self.content, basestring)):
+#                self.content = [self.content]
+#            l = []
+#            for i in self.content:
+#                l += i.split(',')
+#            self.content = l
+        self.content = self.getContentPath()
+        if len(self.content) == 0:
+            return
+        if backendObject:
+            self.backendObject.contentObserver.register(notifyClass)
         ignore_patterns = kwargs.get('ignore_patterns',[])
         self.ignore_file_pattern = re.compile('|'.join(['^\..*'] + list(ignore_patterns)))
         
@@ -560,10 +611,8 @@ class MediaStore(BackendStore):
         if( len(self.urlbase) > 0 and self.urlbase[len(self.urlbase)-1] != '/'):
             self.urlbase += '/'
         
-        try:
-            self.name = kwargs['name']
-        except KeyError:
-            self.name = "SERVER UPNP"
+        
+      
         self.feature_list = {}
         self.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
         self.createContainer("directories",  parent = self.store[str(0)], path=_("Directories"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
@@ -580,6 +629,18 @@ class MediaStore(BackendStore):
                                  '17': '0'
                                 })
         self.init_completed()
+        
+    def change_name(self, name):
+        self.name = name
+      
+    def getContentPath(self):
+        content = []
+        for x in self.content:
+            if os.path.isdir(x.content):
+                content.append(os.path.abspath(x.content))
+            else:
+                self.backendObject.removeObject(x)
+        return content  
 
     def divideAllElementsInSeparateContainers(self):
         #divide elements if too many childs
@@ -871,6 +932,7 @@ class MediaStore(BackendStore):
         
         
     def notify(self, iwp, filename, mask, parameter=None):
+        print self.content
         self.info("Event %s on %s %s - parameter %r" % (', '.join(self.inotify.flag_to_human(mask)), iwp.path, filename, parameter))
         path = iwp.path
         didsomething = False
@@ -936,6 +998,8 @@ class MediaStore(BackendStore):
     
     def get_x_containers(self):
         return self.feature_list
+        
+
 
 def tolist(obj):
     """Return object as a list:

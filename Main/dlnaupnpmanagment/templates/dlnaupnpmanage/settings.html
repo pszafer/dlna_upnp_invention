@@ -103,10 +103,20 @@
 			}
 			
 			function create_settings(){
+				ip_address = '{{ip_address}}'
+				if (ip_address == 'None'){
+					ip_address = '';
+				}
+				port = ' {{port}}'
+				do_mimetype_container = '{{do_mimetype_container}}'
+				transcoding = '{{transcoding}}'
 				fields = [
-					{ title: 'IP Address', name: 'f_ip', type: 'text', maxlen: 256,  value: ''},
-					{ title: 'Port', name: 'f_port', type: 'text', maxlen: 256, value: '' },
-					{ title: 'Ignore patterns', name: 'f_ignore', type: 'text', maxlen: 256, value: '' }
+					{ title: 'Name', name: 'f_name', type: 'text', value: '{{name}}' },
+					{ title: 'IP Address', name: 'f_ip', type: 'text', maxlen: 256,  value: ip_address },
+					{ title: 'Port', name: 'f_port', type: 'text', maxlen: 256, value: port},
+					{ title: 'Ignore patterns', name: 'f_ignore', type: 'text', maxlen: 256, value: '' },
+					{ title: 'Do mimetype containers', name: 'f_mimetypecontainers', type: 'checkbox', value: do_mimetype_container },
+					{ title: 'Transcoding', name: 'f_transcoding', type: 'checkbox', value: transcoding }
 					]
 				main_holder = $("#main-holder");
 				main_holder.empty();
@@ -124,6 +134,22 @@
 								maxlength: field.maxlen,
 								value: field.value,
 							}).appendTo(td);
+							break;
+						case 'checkbox':
+							if (field.value == 'yes'){
+								jQuery('<input />', {
+									name: field.name,
+									type: field.type,
+									checked : field.value
+								}).appendTo(td);
+							}
+							else {
+								jQuery('<input />', {
+									name: field.name,
+									type: field.type
+								}).appendTo(td);
+							}
+							break;
 					}
 				}
 				tr = jQuery('<tr />', { }).appendTo(main_holder);
@@ -141,9 +167,34 @@
 								onclick: 'javascript:reloadPage();'
 							}).appendTo(td);
 			}
+			function download_settings(){
+				$.getJSON("settings", function(data){
+					cycle_class = most_recent.hasClass('odd') ? "even" : "odd";
+					id = parseInt(most_recent.attr('id'))
+					if (isNaN(id)){
+						id = 0
+					}
+					else {
+						id += 1;
+					}
+					jQuery.each(data, function() {
+								//alert(cycle_class);
+								some_string = '<div id="'+id+'" class="update ' + cycle_class
+									+ '"><div class="timestamp">'
+									+ this.fields.timestamp
+									+ '</div><div class="text">'
+									+ this.fields.body + " " + id
+									+ '</div><div class="clear"></div></div>';
+								//alert(some_string);
+								update_holder.prepend(some_string);
+							cycle_class = (cycle_class == "odd")? "even" : "odd";
+							});
+				});
+			}
 		</script>
 	</head>
 	<body>
+ 	{% debug %} 
 		<form>
 			<table id="maintable" cellspacing="0">
 				<tr id="maintablehead">
@@ -170,7 +221,14 @@
 					<td id="content">
 						<p>Autorefreshing is enabled</p>
 						<div id="main-holder">
-							<script type="text/javascript">create_settings()</script>
+ 							<script type="text/javascript">create_settings()</script>
+ 							<p>{{ created }}</p>
+ 							{% block results %}
+		                        {% for el in fields %}
+		                           <li>{{el.uuid}}</li>
+		                        {% endfor %}
+		                	{% endblock %}    
+ 							<p>{{ results }}</p>
 						</div>
 					</td>
 				</tr>

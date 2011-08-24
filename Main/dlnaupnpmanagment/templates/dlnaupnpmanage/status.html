@@ -31,7 +31,23 @@
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript">
 			
-			
+			function get_server_status(){
+				$.getJSON("serverstatus", function(data){
+					status = data.Status
+					if (status == 'Failed'){
+						jQuery('<p/>', {
+							style: "color: red;",
+							text: 'Server down' 
+						}).appendTo('#status');
+					}
+					else {
+						jQuery('<p/>', {
+							style: "color: green;",
+							text: 'Server running' 
+						}).appendTo('#status');
+					}
+				});
+			}
 			
 			function createmenu(){
 				var menu = [
@@ -129,9 +145,10 @@
 					</td>
 					<td id="content">
 						<p>Autorefreshing is enabled</p>
+						<div id="status">TEXT<script type="text/javascript">get_server_status()</script></div>
 						<div id="main-holder">
 							{% if object_list %}
-								<div id="updat1e-holder">
+								<div id="update-holder">
 									{% for object in object_list %}
 									<div class="update {% cycle even, odd %}" id="{{ object.id }}">
 										<div class="timestamp">
@@ -148,7 +165,7 @@
 								<p>No updates</p>
 							{% endif %}
 							<br />
-							<a href="javascript:update()">CLICK</a>
+							<a href="javascript:get_server_status()">CLICK</a>
 						</div>
 					</td>
 				</tr>

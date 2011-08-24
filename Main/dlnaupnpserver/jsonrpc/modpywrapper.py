@@ -24,7 +24,7 @@ class ModPyServiceHandler(ServiceHandler):
             if not modulePath in sys.path:
                 sys.path.insert(0, modulePath)
 
-            from mod_python import apache
+            from mod_python import apache #@UnresolvedImport
             module = apache.import_module(moduleName, log=1)
             
             if hasattr(module, "service"):
@@ -45,7 +45,7 @@ class ModPyServiceHandler(ServiceHandler):
         self.req.flush()
 
 def handler(req):
-    from mod_python import apache
+    from mod_python import apache #@UnresolvedImport
     ModPyServiceHandler(req).handleRequest(req)
     return apache.OK
     
