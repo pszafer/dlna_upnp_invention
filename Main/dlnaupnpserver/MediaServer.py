@@ -11,17 +11,29 @@ Created on 08-07-2011
 '''
 #import Database
 #from Database import DBCursor, DBSettings
-from Database2 import DBCursor, DBSettings, DBContent
-
-from modCoherence import log
-import sys
-import os.path
+from Database2 import DBCursor, DBContent
 from JSONRPCServer import JsonRpcApp
-import webob
 from backendobject import BackendObject
-from threading import Thread, Lock
+from modCoherence import log
+from threading import Lock
+import os.path
 import threading
-import thread
+import signal
+
+import sys
+import time
+from twisted.internet import reactor
+def set_exit_handler(func):
+    if os.name == "nt":
+        try:
+            import win32api
+            win32api.SetConsoleCtrlHandler(func, True)
+        except ImportError:
+            version = ".".join(map(str, sys.version_info[:2]))
+            raise Exception("pywin32 not installed for Python " + version)
+    else:
+        signal.signal(signal.SIGUSR1, func)
+
 
 def write_settings_to_file(external_address, media_db_path):
     file = open(".settings.dat", "w")
@@ -43,7 +55,7 @@ class MediaServer(log.Loggable):
     '''
     Class which starts server with own MediaStore
     '''
-    logType = 'dlna_upnp_MediaServer'
+    logCategory = 'dlna_upnp_MediaServer'
     
     
     def __init__(self, backendObject=None, lock=None):
@@ -66,13 +78,15 @@ class MediaServer(log.Loggable):
             self.lock.release()
             self.error('Content is empty. Nothing to share')
             return
-        self.coherence = self.get_coherence(settings.ip_addr, None, settings.transcoding)
+        self.coherence = self.get_coherence(None, None, settings.transcoding)
         #self.dbCursor = dbCursor
         if self.coherence is None:
             self.lock.release()
             self.error("None Coherence")
             return
-        self.warning("RUNNING")
+        self.info("RUNNING")
+        settings = self.backendObject.get_settings()
+        md = self.backendObject.get_content()
         self.server = self.create_MediaServer(self.coherence, md, content, settings)
         self.backendObject.close_connection_to_db()
         self.lock.release()
@@ -123,8 +137,9 @@ class MediaServer(log.Loggable):
         kwargs['dbContent'] = dbContent
         kwargs['urlbase'] = coherence.hostname
         kwargs['transcoding'] = settings.transcoding
+        logofile = "file://"+os.path.abspath("logo2.png")
         kwargs['icons'] = [
-                           {'url': "file://"+os.path.abspath("logo2.png"),
+                           {'url': logofile,
                             'mimetype' : 'image/png'}
                            ,]
         if settings.enable_inotify == 0:
@@ -136,16 +151,28 @@ class MediaServer(log.Loggable):
         kwargs['backendObject'] = self.backendObject
         server = CoherenceMediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
-class Runserver(threading.Thread):
+    def stopMediaServer(self):
+        self.server.unregister()
+        self.info("UNREGISTERED")
     
+class Runserver(threading.Thread):
+
     def __init__(self, mediaServer):
         self.mediaServer = mediaServer
+        self.reactor = reactor
         threading.Thread.__init__(self)
+        self.finished = threading.Event()
+        self.setDaemon(True)
         
     def run(self):
-        from twisted.internet import reactor
-        reactor.callWhenRunning(self.mediaServer.run)
-        reactor.run(installSignalHandlers=0)
+        self.reactor.callWhenRunning(self.mediaServer.run)
+        self.reactor.run(installSignalHandlers=0)
+    
+    def stop(self):
+        self.mediaServer.stopMediaServer()
+        self.reactor.stop()
+        self.finished.set()
+        
 
 class RunRPCServer():
     def __init__(self, backendObject):
@@ -161,7 +188,7 @@ class RunRPCServer():
         parser.add_option(
             '-H', '--host', default='127.0.0.1',
             help='Host to serve on (default localhost; 0.0.0.0 to make public)')
-        options, args = parser.parse_args()
+        options, _ = parser.parse_args()
         #if not args or len(args) > 1:
         #    print 'You must give a single object reference'
         #    parser.print_help()
@@ -172,30 +199,36 @@ class RunRPCServer():
             app)
         print 'Serving on http://%s:%s' % (options.host, options.port)
         self.backendObject.set_name("buuu")
-        server.serve_forever() 
-path_to_db = "media.db"
-dbpath = os.path.abspath(path_to_db)
-lock = Lock()
-
-dbCursor = DBCursor(db_path=dbpath)
-dbCursor.insert(DBContent("/home/xps/Wideo/test"))
-backendObject = BackendObject(dbCursor, "test")
-
-
-#
-#backendObject.close_connection_to_db()
-mediaServer = MediaServer(backendObject=backendObject, lock=lock)
-s = Runserver(mediaServer)
-s.start()
-
-lock.acquire()
-try:
-    r = RunRPCServer(backendObject)
-    r.run()
-finally:
-    lock.release()
-
-
-
-
-
+        try:
+            server.serve_forever()
+        except Exception:
+            pass 
+if __name__ == "__main__":
+    path_to_db = "media.db"
+    dbpath = os.path.abspath(path_to_db)
+    lock = Lock()
+    
+    dbCursor = DBCursor(db_path=dbpath)
+    dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+    backendObject = BackendObject(dbCursor, "test")
+    
+    
+    
+    #
+    #backendObject.close_connection_to_db()
+    mediaServer = MediaServer(backendObject=backendObject, lock=lock)
+    s = Runserver(mediaServer)
+    s.start()
+    def on_exit(sig, func=None):
+        print "Exiting"
+        s.stop()
+        print "Bye Bye"
+        sys.exit(0)
+    set_exit_handler(on_exit)
+    lock.acquire()
+    time.sleep(3)
+    try:
+        r = RunRPCServer(backendObject)
+        r.run()
+    finally:
+        lock.release()

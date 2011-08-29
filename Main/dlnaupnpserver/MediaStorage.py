@@ -546,7 +546,7 @@ def log(event):
     print '%s was written' % event.subject
 
 class MediaStore(BackendStore):
-    logType = 'dlna_upnp_MediaStore'
+    logCategory = 'dlna_upnp_MediaStore'
     implements = ['MediaServer']
     
     def __init__(self, server, **kwargs):
@@ -622,14 +622,13 @@ class MediaStore(BackendStore):
         self.update_id += 1
         self.searchInContentPath(self.content)                              #recurency search
         #self.divideAllElementsInSeparateContainers()    
-        
         self.wmc_mapping.update({'14': '0',
                                  '15': '0',
                                  '16': '0',
                                  '17': '0'
                                 })
         self.init_completed()
-        
+    
     def change_name(self, name):
         self.name = name
       

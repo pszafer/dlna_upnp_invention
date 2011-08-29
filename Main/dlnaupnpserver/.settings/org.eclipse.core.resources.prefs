@@ -1,4 +1,4 @@
-#Sun Aug 21 17:37:32 CEST 2011
+#Sun Aug 28 20:15:00 CEST 2011
 eclipse.preferences.version=1
 encoding//flask/app.py=utf-8
 encoding//modCoherence/backend.py=utf-8
@@ -6,3 +6,4 @@ encoding//modCoherence/upnp/devices/internet_gateway_device_client.py=utf-8
 encoding//modCoherence/upnp/devices/media_server.py=utf-8
 encoding//modCoherence/upnp/devices/wan_connection_device_client.py=utf-8
 encoding//modCoherence/upnp/devices/wan_device_client.py=utf-8
+encoding/Daemon.py=utf-8

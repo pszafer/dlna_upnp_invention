@@ -92,6 +92,11 @@ class DBContent(Base):
     
     def __init__(self, content = None):
         self.content = content
+        
+    def getjson(self):
+        dict = {}
+        dict['content'] = self.content
+        return dict
 
 class DBCursor(object):
     '''
@@ -112,6 +117,28 @@ class DBCursor(object):
         session.commit()
         session.close()
     
+    def update(self, object):
+        session = Session()
+        session.add(object)
+        session.commit()
+        session.close()
+    
+    def set_ip(self, ipaddress):
+        #self.info("Setting ip to use by Media server")
+        session = Session()
+        settings = session.query(DBSettings).first()
+        settings.ip_addr = ipaddress
+        session.flush()
+        session.close()
+    
+    def set_port(self, port):
+        #self.info("Setting ip to use by Media server")
+        session = Session()
+        settings = session.query(DBSettings).first()
+        settings.port = port
+        session.flush()
+        session.close()
+        
     def insert(self, object):
         session = Session()
         session.add(object)

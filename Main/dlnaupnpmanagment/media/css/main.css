@@ -6,6 +6,11 @@ body {
 	color: #000000;
 }
 
+p
+{
+    margin:0;
+}
+
 td{
 	font: 12px sans-serif;
 }
@@ -15,26 +20,61 @@ form{
 	margin: 0;
 }
 
+#contentbody {
+	margin-bottom: 2px;
+}
+
 #maintable {
+	display: block;
 	background: #ffffff;
 	border-spacing: 0;
 	width: 900px;
 	margin: 2px auto;
 	margin-bottom: 50px;
-	height: 100%
 }
 
 #maintablehead {
-	height: 130px;
 	padding: 15px 10px 13px 10px;
 }
-	
+
+#status-table {
+	width: 90%;
+	padding: 5px;
+	border-spacing: 0px;
+}
+
+#status-table tr{
+	max-height: 14px;
+}
+
+#service-table {
+	width: 90%;
+	padding: 5px;
+	border-spacing: 0;
+}
+
+#service-table td{
+	width: 25%;
+	padding: 5px;
+	border-spacing: 0;
+}
 
 #header {
 	background: #C0C0C0;
 	border-bottom: 2px dotted; #ddd;
 }
 
+#savecancel-table {
+	width: 90%;
+	padding: 5px;
+	border-spacing: 0;
+}
+
+#savecancel-table .tdbuttons{
+	width: 100%;
+	padding: 5px;
+	border-spacing: 0;
+}
 
 #htable {
 	background: #C0C0C0;
@@ -49,7 +89,6 @@ form{
 }
 
 #htable .title {
-	
 	font: 25px sans-serif;
 	color: #fff;
 	font-weight: bold;
@@ -92,4 +131,36 @@ display: block;
 
 #menu a.indent1 {
 padding: 2px 0 2px 10px;
+}
+
+input,
+select {
+font: 12px sans-serif;
+}
+
+input[type='button'] {
+color: #000;
+background: #f7f7f7;
+border-top: 1px solid #ccc;
+border-left: 1px solid #ccc;
+border-bottom: 1px solid #ccc;
+border-right: 1px solid #ccc;
+width: 100%;
+}
+input[type='button'][disabled] {
+color: #aaa;
+}
+input[type='button']:hover {
+background: #C0C0C0;
+color: red;
+}
+
+input[type='text'] {
+color: #000;
+background: #f7f7f7;
+border-top: 1px solid #ccc;
+border-left: 1px solid #ccc;
+border-bottom: 1px solid #ccc;
+border-right: 1px solid #ccc;
+width: 100%;
 }

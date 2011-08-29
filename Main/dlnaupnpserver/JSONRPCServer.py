@@ -81,8 +81,11 @@ class JsonRpcApp(object):
                                 id=id)))
         if ('settings') in method.__name__:
             result = result.getjson()
-        body=dumps(dict(result=result,
-                            error=None,
-                            id=id))
-        return Response(
-            content_type='application/json',body=body)
+        elif ('content') in method.__name__:
+            contentlist = []
+            for x in result:
+                contentlist.append(x.getjson())
+            result = contentlist
+        
+        body=dumps(dict(result=result,error=None,id=id))        
+        return Response(content_type='application/json',body=body)

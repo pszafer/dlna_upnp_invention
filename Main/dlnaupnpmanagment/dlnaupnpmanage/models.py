@@ -1,18 +1,8 @@
 from django.db import models
 from django.contrib import admin
 
-class BlogPost(models.Model):
-    #title = models.CharField(max_length = 150)
-    body = models.TextField()
-    timestamp = models.DateTimeField()
-    
-    def __unicode__(self):
-        return "[%s] %s" % (
-                            self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                            self.body
-                            )
-    
-    
+class Content(models.Model):
+    path = models.CharField(max_length = 400)
 
 class DBContainer(models.Model):
     ip_address = models.CharField(max_length=20)
@@ -25,6 +15,6 @@ class DBContainer(models.Model):
     transcoding = models.CharField(max_length=10)
     enable_inotify = models.BooleanField(default=True)
     
-    
-            
-admin.site.register(BlogPost)
+class DBAddress(models.Model):
+    ip_address = models.CharField(max_length=20)
+    port = models.IntegerField(default=0)

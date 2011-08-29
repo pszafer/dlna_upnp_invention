@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>STATUS</title>
+		<title>MEDIA ITEMS</title>
 		<style type="text/css">
 			h1 {
 				background: #C0C0C0;
@@ -25,7 +25,16 @@
 				height: 1px;
 			}
 		</style>
-		
+<!--
+dodawanie mediow
+sprawdzenie czy jest polaczenie z managing service
+jeżeli tak to zrob te add nie na szaro
+add, dodaj content, wyslij do service,
+jezeli service zwroci OK, to wtedy zostaw i zapamietaj wiersz,
+jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac 		
+
+
+ -->
 		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
@@ -46,7 +55,7 @@
 							<tr>
 								<td id="text">
 									<div class="title">DLNA UPNP SERVER</div>
-									<div class="version">VERSION TO GET</div>
+<!-- 									<div class="version">VERSION TO GET</div> -->
 								</td>
 								<td class="logo">
 									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>

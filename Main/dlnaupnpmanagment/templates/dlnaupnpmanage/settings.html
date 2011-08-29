@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>TEST</title>
+		<title>SETTINGS</title>
 		<style type="text/css">
 			h1 {
 				background: #C0C0C0;
@@ -29,144 +29,8 @@
 		
 		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript">
-			
-			
-			
-			function createmenu(){
-				var menu = [
-				['Status',				'status'],
-				['Settings',			'settings'],
-				['Media',			'javascript:alert("test2")'],
-				];
-				
-				var content = [];
-				
-				for (i = 0; i< menu.length; ++i){
-					var item = menu[i];
-					if (!item){
-						//jQuery('<br />').appendTo('#menu');
-						content.push('<br />');
-					}
-					if (item.length == 2){
-						jQuery('<a/>', {
-						    class: 'indent1',
-						    href: item[1],
-						    title: item[0],
-						    text: item[0]
-						}).appendTo('#menu');
-						//content.push(
-						
-						//content.push('<a href="' + item[1] + '" class="indent1">' + item[0] + '</a>');
-					}
-				}
-				//document.write(content.join(''));
-			}
-			
-			function cleanall(){
-				update_holder = $("#update-holder");
-				update_holder.empty();
-			}
-			
-			function update(){
-				update_holder = $("#update-holder");
-				if (update_holder.length == 0){
-					main_holder = $("#main-holder");
-					update_holder = jQuery('<div/>',{
-						id: 'update-holder'
-					}).appendTo(main_holder);
-				}
-				
-				most_recent = update_holder.find("div:first");
-				$.getJSON("update", function(data){
-					cycle_class = most_recent.hasClass('odd') ? "even" : "odd";
-					id = parseInt(most_recent.attr('id'))
-					if (isNaN(id)){
-						id = 0
-					}
-					else {
-						id += 1;
-					}
-					jQuery.each(data, function() {
-								//alert(cycle_class);
-								some_string = '<div id="'+id+'" class="update ' + cycle_class
-									+ '"><div class="timestamp">'
-									+ this.fields.timestamp
-									+ '</div><div class="text">'
-									+ this.fields.body + " " + id
-									+ '</div><div class="clear"></div></div>';
-								//alert(some_string);
-								update_holder.prepend(some_string);
-							cycle_class = (cycle_class == "odd")? "even" : "odd";
-							});
-				});
-			}
-			
-			function create_settings(){
-				ip_address = '{{ip_address}}'
-				if (ip_address == 'None'){
-					ip_address = '';
-				}
-				port = ' {{port}}'
-				do_mimetype_container = '{{do_mimetype_container}}'
-				transcoding = '{{transcoding}}'
-				fields = [
-					{ title: 'Name', name: 'f_name', type: 'text', value: '{{name}}' },
-					{ title: 'IP Address', name: 'f_ip', type: 'text', maxlen: 256,  value: ip_address },
-					{ title: 'Port', name: 'f_port', type: 'text', maxlen: 256, value: port},
-					{ title: 'Ignore patterns', name: 'f_ignore', type: 'text', maxlen: 256, value: '' },
-					{ title: 'Do mimetype containers', name: 'f_mimetypecontainers', type: 'checkbox', value: do_mimetype_container },
-					{ title: 'Transcoding', name: 'f_transcoding', type: 'checkbox', value: transcoding }
-					]
-				main_holder = $("#main-holder");
-				main_holder.empty();
-				for (i=0; i<fields.length; ++i){
-					field = fields[i];
-					tr = jQuery('<tr />', { }).appendTo(main_holder);
-					td = jQuery('<td />', { }).appendTo(tr);
-					td.append('<p>'+field.title+'</p>');
-					td = jQuery('<td />', { }).appendTo(tr);
-					switch (field.type){
-						case 'text':
-							jQuery('<input />', {
-								name: field.name,
-								type: field.type,
-								maxlength: field.maxlen,
-								value: field.value,
-							}).appendTo(td);
-							break;
-						case 'checkbox':
-							if (field.value == 'yes'){
-								jQuery('<input />', {
-									name: field.name,
-									type: field.type,
-									checked : field.value
-								}).appendTo(td);
-							}
-							else {
-								jQuery('<input />', {
-									name: field.name,
-									type: field.type
-								}).appendTo(td);
-							}
-							break;
-					}
-				}
-				tr = jQuery('<tr />', { }).appendTo(main_holder);
-				td = jQuery('<td />', { }).appendTo(tr);
-				jQuery('<input />', {
-								id: 'save_button',
-								type: 'button',
-								value: 'Save',
-								onclick: 'save()'
-							}).appendTo(td);
-				jQuery('<input />', {
-								id: 'cancel_button',
-								type: 'button',
-								value: 'Cancel',
-								onclick: 'javascript:reloadPage();'
-							}).appendTo(td);
-			}
 			function download_settings(){
 				$.getJSON("settings", function(data){
 					cycle_class = most_recent.hasClass('odd') ? "even" : "odd";
@@ -191,10 +55,14 @@
 							});
 				});
 			}
+			
+			$(document).ready(function(){
+				create_settings('{{name}}', '{{ip_address}}', '{{port}}', '{{do_mimetype_container}}', '{{transcoding}}')
+			})
+			
 		</script>
 	</head>
 	<body>
- 	{% debug %} 
 		<form>
 			<table id="maintable" cellspacing="0">
 				<tr id="maintablehead">
@@ -213,7 +81,7 @@
 						
 					</td>
 				</tr>
-				<tr id="body">
+				<tr id="contentbody">
 					<td id="menu">
 						<h1>MENU</h1>
  						<script type="text/javascript">createmenu()</script>
@@ -221,11 +89,13 @@
 					<td id="content">
 						<p>Autorefreshing is enabled</p>
 						<div id="main-holder">
- 							<script type="text/javascript">create_settings()</script>
+ 							<table id="savecancel-table">
+							</table>
  							<p>{{ created }}</p>
  							{% block results %}
 		                        {% for el in fields %}
 		                           <li>{{el.uuid}}</li>
+		                           <p>test</p>
 		                        {% endfor %}
 		                	{% endblock %}    
  							<p>{{ results }}</p>
