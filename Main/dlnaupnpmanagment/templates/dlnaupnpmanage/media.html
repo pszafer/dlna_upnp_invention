@@ -39,13 +39,52 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript">
+		
+			function test(){
+				main_holder = $("#status-table");
+				main_holder.empty();
+				{% if object_list %}
+					empty_rows_content_table(main_holder, "first_row");
+						{% for object in object_list %}
+							create_single_content_item(main_holder, "{{object.id}}", "f_name", "text", "{{object.path}}");
+						{% endfor %}
+					empty_rows_content_table(main_holder, "last_row");
+				{% endif %}
+				
+			}
+		
 			$(document).ready(function(){
-				get_all_status();
-				getuuid()
-				setInterval("get_all_status()", 20000);
+				test();
+				status = get_server_status(false);
+				if (status == true){
+					$(".delete").removeAttr('disabled');
+					$(".controls").removeAttr('disabled');
+				}
+				else {
+					alert(status);
+					$(".delete").attr('disabled', '');
+					$(".controls").attr('disabled', '');
+				}
 			})
+			
+			function adding(){
+				$.ajax({
+					url: "addContent",
+					type: "POST",
+					data:{
+						content: "/home/xps/Obrazy/toyota"
+					},
+					success: function(data) {
+						alert(data.id);
+					},
+					error: function(x,y,z) {
+						result = false;
+					},
+				});
+			}
 		</script>
 	</head>
+<!-- 	{% debug %} -->
 	<body>
 		<form>
 			<table id="maintable" cellspacing="0">
@@ -73,71 +112,12 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 					<td id="content">
 						<p>Autorefreshing is enabled</p>
 						<p>Refresh interval: 20 seconds</p>
-						<table id="service-table">
+						<table id="media-table">
 							<tr>
-								<td id="service-td"><input type='button' class='controls' onclick='server_start()' value='Start' id='b_connect' style='display:'></td>
-								<td id="service-td"><input type='button' class='controls' onclick='stop_server()' value='Stop' id='b_connect' style='display:'></td>
-							</tr>
-							<tr>
-								<td id="service-td"><input type='button' class='controls' onclick='restart_server()' value='Restart' id='b_connect' style='display:'></td>
-								<td id="service-td"><input type='button' class='controls' onclick='reload_config()' value='Reload configuration' id='b_connect' style='display:'></td>
+								<td id="service-td" colspan="2"><input type='button' class='controls' onclick='add_content_row()' value='Add content row' id='b_add' style='display:'></td>
 							</tr>
 						</table>
 						<table id="status-table">
-							<tr id="header">
-								<td colspan="2">Server status</td>
-							</tr>
-							<tr>
-								<td>
-									<div id="statusheader">Managing service is:</div>
-								</td>
-								<td>
-									<div id="status"></div>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<div id="status2header-td">UPNP Service is:</div>
-								</td>
-								<td>
-									<div id="status2"></div>
-								</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr id="header">
-								<td colspan="2">UUID:</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr>
-								<td id="uuidtd" colspan="2">
-								</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr id="header">
-								<td colspan="2">Shared media content:</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr>
-								<td colspan="2">
-									<div id="main-holder">
-										{% if object_list %}
-											<div id="update-holder">
-												{% for object in object_list %}
-												<div class="update {% cycle even, odd %}" id="{{ object.id }}">
-													<div class="text">
-														{{ object.path|linebreaksbr }}
-													</div>
-													<div class="clear"></div>
-												</div>
-												{% endfor %}
-											</div>
-										{% else %}
-											<p>No updates</p>
-										{% endif %}
-										<br />
-									</div>
-								</td>
-							</tr>
 						</table>
 					</td>
 				</tr>

@@ -18,3 +18,11 @@ class DBContainer(models.Model):
 class DBAddress(models.Model):
     ip_address = models.CharField(max_length=20)
     port = models.IntegerField(default=0)
+    
+class ServiceStatus(models.Model):
+    name = models.CharField(max_length=20)
+    working = models.BooleanField(default=False)
+    
+ServiceStatus.objects.all().delete()
+ServiceStatus(name="manage").save()
+ServiceStatus(name="upnp").save()

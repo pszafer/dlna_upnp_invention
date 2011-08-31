@@ -148,10 +148,20 @@ class DBCursor(object):
         session = Session()
         session.add(object)
         session.flush()
+        id = object.id
         session.close()
+        return id
     
-    def removeObject(self, object):
+    def removeObject(self, type, id):
+        table = None
+        if type == "settings":
+            table = DBSettings()
+        elif type == "content":
+            table = DBContent()
+        elif type == "ignore_patterns":
+            table = DBIgnorePatterns()
         session = Session()
+        object = session.query(type(table)).get(id)
         session.delete(object)
         session.flush()
         session.close()

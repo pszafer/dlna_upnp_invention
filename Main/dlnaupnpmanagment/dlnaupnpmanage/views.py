@@ -1,5 +1,7 @@
 # Create your views here.
-from dlnaupnpmanagment.dlnaupnpmanage.models import DBContainer, Content, DBAddress
+from dlnaupnpmanagment.dlnaupnpmanage.models import DBContainer, Content, DBAddress, ServiceStatus
+from django.views.decorators.csrf import csrf_exempt
+
 from django.http import HttpResponse, HttpResponseServerError, HttpRequest
 from django.core import serializers
 from django.shortcuts import render_to_response
@@ -59,11 +61,13 @@ def serverstatus(request):
             response = HttpResponse()
             response['Content-Type'] = "application/json"
             response.write(dumps(all_list))
+            update_mangaginservice_status_db(True)
             return response
         except Exception, e:
             response = HttpResponse()
             response['Content-Type'] = "application/json"
             response.write("{\"Status\":\"Failed\"}")
+            update_mangaginservice_status_db(False)
             return response
 
 #DONE
@@ -90,14 +94,36 @@ def upnpserverstatus(request):
             response = HttpResponse()
             response['Content-Type'] = "application/json"
             response.write("{\"Status\":\"Running\"}")
+            update_upnpservice_status_db(True)
             return response
         except Exception, e:
             print "Exception %s" % str(e)
+            checkAddress(request)
+            entries = DBAddress.objects.all().values().get()
+            ip = str(entries['ip_address'])
+            port = str(entries['port'])
             response = HttpResponse()
             response['Content-Type'] = "application/json"
             response.write("{\"Status\":\"Failed\"}")
+            update_upnpservice_status_db(False)
             return response
-        
+
+def update_mangaginservice_status_db(status = False):
+    object = ServiceStatus.objects.get(name="manage")
+    if object.working == True:
+        upnpobject = ServiceStatus.objects.get(name="upnp")
+        if upnpobject.working == False:
+            checkAddress()
+    object.working = status
+    object.save()
+    
+
+def update_upnpservice_status_db(status = False):
+    upnpobject = ServiceStatus.objects.get(name="upnp")
+    upnpobject.working = status
+    upnpobject.save()
+    
+
 def settings(request):
     try:
         json = dict(method="get_settings",id=None,params=[])
@@ -165,6 +191,7 @@ def setname(request):
     response['Content-Type'] = "text/javascript"
     response.write(all_list)
     return response
+
 
 def update_content():
     try:
@@ -249,3 +276,25 @@ def checkAddress(request):
         httpResponse['Content-Type'] = "text"
         httpResponse.write("Error")
         return httpResponse
+
+@csrf_exempt
+def addContent(request):
+    if request.is_ajax() and request.POST:
+#        json = dict(method="add_new_path",id=None,params=[request.POST.get('content')])
+#        from webob import Request as Requ
+#        req = Requ.blank("http://localhost:7777/")
+#        req.method = 'POST'
+#        req.content_type = 'application/json'
+#        from simplejson import loads, dumps
+#        req.body = dumps(json)
+#        from wsgiproxy.exactproxy import proxy_exact_request
+#        resp = req.get_response(proxy_exact_request)
+#        json = loads(resp.body)
+#        all_list = json['result']
+#        if not 'False' in all_list:
+        list = update_content()
+        response = HttpResponse()
+        response['Content-Type'] = "text/javascript"
+        response.write(list)
+        return response
+        #return HttpResponseBadRequest('Only POST accepted')

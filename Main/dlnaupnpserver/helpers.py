@@ -30,13 +30,12 @@ mimetypes.add_type('video/mpegts', '.ts')
 mimetypes.add_type('video/avi', '.divx')
 mimetypes.add_type('video/avi', '.avi')
 mimetypes.add_type('video/ogg', '.ogv')
-#mimetypes.add_type('video/x-matroska', '.mkv')
 mimetypes.add_type('video/avi', '.mkv')
 mimetypes.add_type('text/plain', '.srt')
 mimetypes.add_type('image/png', '.png')
 mimetypes.add_type('image/jpeg', '.jpg')
 
-
+#mimetypes.add_type('video/x-matroska', '.mkv')
 ## Sorting helpers
 NUMS = re.compile('([0-9]+)')
 def _natural_key(s):

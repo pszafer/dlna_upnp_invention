@@ -287,6 +287,7 @@ class MSRoot(resource.Resource, log.Loggable):
         self.info("finished, sentLength: %d chunked: %d code: %d" % (request.sentLength, request.chunked, request.code))
         self.info("finished %r" % request.headers)
         self.server.connection_manager_server.remove_connection(id)
+        pass
 
     def import_file(self,name,request):
         self.info("import file, id %s" % name)
@@ -317,6 +318,7 @@ class MSRoot(resource.Resource, log.Loggable):
     def prepare_headers(self,ch,request):
         request.setHeader('transferMode.dlna.org', request._dlna_transfermode)
         if hasattr(ch,'item') and hasattr(ch.item, 'res'):
+            request.setHeader('content-type', ch.get_mimetype())
             if ch.item.res[0].protocolInfo is not None:
                 additional_info = ch.item.res[0].get_additional_info()
                 if additional_info != '*':
@@ -375,6 +377,8 @@ class MSRoot(resource.Resource, log.Loggable):
             if os.path.exists(p):
                 ch = StaticFile(p)
         self.info('MSRoot ch', ch)
+        #if headers.has_key('user-agent') and ('samsung' in str(headers['user-agent']).lower()):
+        ch.contentTypes['.mkv'] = 'video/x-msvideo'
         return ch
 
     def getChild(self, name, request):

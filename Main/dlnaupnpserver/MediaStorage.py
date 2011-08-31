@@ -28,6 +28,7 @@ import gettext
 from modCoherence.backend import BackendItem, BackendStore
 from modCoherence.upnp.devices import media_server
 from modCoherence.upnp.core import utils
+from modCoherence import log
 
 import re
 from aifc import Error
@@ -63,7 +64,7 @@ def raw_generate(fn):
         im.save(buf, imghdr.what(fn))
         return buf.getvalue()
 
-class Subscriber:
+class Subscriber(log.Loggable):
     def __init__(self, parent):
         self.parent = parent
 
@@ -87,15 +88,18 @@ class ContentObserver(Subscriber):
                 return
             else:
                 self.parent.store.clear()
-                self.parent.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("root"))
-                self.parent.createContainer("directories",  parent = self.parent.store[str(0)], path=_("Directories"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-                self.parent.feature_list['imageItem'] = self.parent.createContainer("Image", parent = self.store[str(0)], path=_("Image"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-                self.parent.feature_list['audioItem'] = self.parent.createContainer("Audio", parent = self.store[str(0)], path=_("Audio"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
-                self.parent.feature_list['videoItem'] = self.parent.createContainer("Video", parent = self.store[str(0)], path=_("Video"), mimetype="directory", urlbase = self.urlbase, hostname = self.hostname, itemClass=classChooser("directory"))
+                self.parent.next_id = 0
+                self.parent.content = content
+                self.parent.containers_map.clear()
+                self.parent.mimetypes_root_created = False
+                self.parent.createContainer("root",  parent = None, path="root", mimetype="directory", urlbase = self.parent.urlbase, hostname = self.parent.hostname, itemClass=classChooser("root"))
+                self.parent.createContainer("directories",  parent = self.parent.store[str(0)], path=_("Directories"), mimetype="directory", urlbase = self.parent.urlbase, hostname = self.parent.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['imageItem'] = self.parent.createContainer("Image", parent = self.parent.store[str(0)], path=_("Image"), mimetype="directory", urlbase = self.parent.urlbase, hostname = self.parent.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['audioItem'] = self.parent.createContainer("Audio", parent = self.parent.store[str(0)], path=_("Audio"), mimetype="directory", urlbase = self.parent.urlbase, hostname = self.parent.hostname, itemClass=classChooser("directory"))
+                self.parent.feature_list['videoItem'] = self.parent.createContainer("Video", parent = self.parent.store[str(0)], path=_("Video"), mimetype="directory", urlbase = self.parent.urlbase, hostname = self.parent.hostname, itemClass=classChooser("directory"))
                 self.parent.update_id += 1;
                 self.parent.searchInContentPath(self.parent.content)
                 self.info("Added new content")
-            pass
 
 class MediaItem(BackendItem):   
     logCategory = 'smewt_media_store'
@@ -194,7 +198,9 @@ class MediaItem(BackendItem):
                 size = os.path.getsize(path)
                 self.item.date = datetime.datetime.fromtimestamp(os.path.getmtime(path))    #get file change date
                 if mimetype != 'item':                                                          #make sure it has some reasonable mimetype
-                    res = Resource(internal_url, 'internal:%s:%s:*' % (hostname, mimetype))    #create internal resource    
+                    _path,_ =  os.path.splitext(path)
+                    _internal_url = 'file://' + _path
+                    res = Resource(_internal_url, 'internal:%s:%s:*' % (hostname, mimetype))    #create internal resource    
                 if 'video' in mimetype:
                     res, res1, res2 = self.create_VideoItem(res, size, external_url, mimetype, path, urlbase)
                     res3 = self.createThumbnails(path, urlbase)
@@ -885,8 +891,11 @@ class MediaStore(BackendStore):
             id = self.createItem(path, parent, mimetype)
             if mimetype == 'directory':
                 if self.inotify is not None:
-                    mask = IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CHANGED
-                    self.inotify.watch(path, mask=mask, auto_add=False, callbacks=(self.notify,id))
+                    try:
+                        mask = IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CHANGED
+                        self.inotify.watch(path, mask=mask, auto_add=False, callbacks=(self.notify,id))
+                    except IOError:
+                        pass
                 
                 return self.store[id]
         except OSError, e:
@@ -898,8 +907,8 @@ class MediaStore(BackendStore):
                 return None
         
         if mimetype not in ('root', 'directory') and 'video' in mimetype:                               #id will be no id +
-            _,ext =  os.path.splitext(path)
-            object_id = str(self.getNextID()) + ext.upper()
+            #_,ext =  os.path.splitext(path)
+            object_id = str(self.getNextID())# + ext.upper()
             self.store[object_id] = MediaItem(object_id=object_id,
                                           itemClass=itemClass,
                                           path=path,

@@ -131,17 +131,24 @@ class BackendObject(log.Loggable):
         #self.dbCursor.connect2DB(self.dbCursor.db_path)
     def create_session(self):
         return self.dbCursor.create_session()
-    def add_content(self, path):
+    def add_new_path(self, path):
+        dict = {}
+        dict['status'] = False
         self.info("Added content to share: %s", path)
-        if os.path.isdir(path):
-            for x in self.get_content():
-                if x.content == path:
-                    return False
-            self.dbCursor.insertCommit(DBContent(path))
-            self.contentObserver.contentChanged(True)
-            return True
-        else:
-            return False
+        try:
+            if os.path.isdir(path):
+                for x in self.get_content():
+                    if x.content == path:
+                        return dict
+                id = self.dbCursor.insertCommit(DBContent(path))
+                self.contentObserver.contentChanged(True)
+                dict['status'] = id
+                return dict
+            else:
+                dict['status'] = False
+        except Exception, e:
+            self.info("PROBLEM "+ e)
+        return dict
     
     def removeObject(self, object):
         self.dbCursor.removeObject(object)

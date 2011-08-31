@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     url(r'^dlnaupnpmanagment/stopserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.stopserver'),
     url(r'^dlnaupnpmanagment/checkAddress', 'dlnaupnpmanagment.dlnaupnpmanage.views.checkAddress'),
     url(r'^dlnaupnpmanagment/getuuid', 'dlnaupnpmanagment.dlnaupnpmanage.views.getuuid'),
+    url(r'^dlnaupnpmanagment/addContent', 'dlnaupnpmanagment.dlnaupnpmanage.views.addContent'),
     (r'^databrowse/(.*)', databrowse.site.root),
     # Uncomment the admin/doc line below to enable admin documentation:
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
