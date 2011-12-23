@@ -639,6 +639,9 @@ class MediaStore(BackendStore):
         self.name = name
       
     def getContentPath(self):
+        '''
+        TODO what if content folder not exist or if it is not folder (app stops :( ) 
+        '''
         content = []
         for x in self.content:
             if os.path.isdir(x.content):
