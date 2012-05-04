@@ -4,7 +4,7 @@
 
 # Copyright 2007,2008 Frank Scholz <coherence@beebits.net>
 
-from coherence.extern.et import ET, indent
+from modCoherence.extern.et import ET, indent
 
 class ConfigMixin(object):
 

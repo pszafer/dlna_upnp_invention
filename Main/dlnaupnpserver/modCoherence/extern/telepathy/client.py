@@ -21,9 +21,9 @@ from telepathy.constants import CONNECTION_HANDLE_TYPE_CONTACT, \
      TUBE_CHANNEL_STATE_REMOTE_PENDING, TUBE_CHANNEL_STATE_OPEN, \
      TUBE_CHANNEL_STATE_NOT_OFFERED, HANDLE_TYPE_LIST
 
-from coherence.extern.telepathy.tubeconn import TubeConnection
-from coherence.extern.telepathy.connect import tp_connect
-from coherence import log
+from modCoherence.extern.telepathy.tubeconn import TubeConnection
+from modCoherence.extern.telepathy.connect import tp_connect
+from modCoherence import log
 
 from twisted.internet import defer
 

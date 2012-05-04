@@ -7,10 +7,10 @@
 
 from twisted.web import resource
 
-from coherence.upnp.core.soap_service import UPnPPublisher
+from modCoherence.upnp.core.soap_service import UPnPPublisher
 
-from coherence.upnp.core import service
-from coherence import log
+from modCoherence.upnp.core import service
+from modCoherence import log
 
 
 class DimmingControl(service.ServiceControl,UPnPPublisher):

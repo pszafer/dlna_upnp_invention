@@ -3,10 +3,10 @@
 
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
 
-from coherence.upnp.services.clients.switch_power_client import SwitchPowerClient
-from coherence.upnp.services.clients.dimming_client import DimmingClient
+from modCoherence.upnp.services.clients.switch_power_client import SwitchPowerClient
+from modCoherence.upnp.services.clients.dimming_client import DimmingClient
 
-from coherence import log
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

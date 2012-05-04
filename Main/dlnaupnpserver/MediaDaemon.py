@@ -36,6 +36,7 @@ class MyDaemon(Daemon):
         
         dbCursor = DBCursor(db_path=dbpath)
         dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+        dbCursor.insert(DBContent("/home/xps/Wideo/The.Way.Back.720p.Bluray.x264-CBGB"))
         backendObject = BackendObject(dbCursor, "test")
         #backendObject.close_connection_to_db()
         mediaServer = MediaServer(backendObject=backendObject, lock=lock)

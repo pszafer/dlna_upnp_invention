@@ -13,7 +13,7 @@ try:
    from uuid import uuid4
 except ImportError:
     try:
-        from coherence.extern.uuid.uuid import uuid4
+        from modCoherence.extern.uuid.uuid import uuid4
     except ImportError:
         print 'fallback: define own uuid4'
         def uuid4():

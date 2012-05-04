@@ -7,17 +7,17 @@
 import time
 from sets import Set
 
-from coherence.upnp.core import utils
+from modCoherence.upnp.core import utils
 try:
     #FIXME:
     # there is some circular import, service imports variable, variable imports service
     # how is this done properly?
     #
-    from coherence.upnp.core import service
+    from modCoherence.upnp.core import service
 except ImportError:
     import service
 
-from coherence import log
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

@@ -12,13 +12,13 @@ from twisted.web import resource
 from twisted.internet import defer
 
 
-from coherence.upnp.core.soap_service import UPnPPublisher
-from coherence.upnp.core.soap_service import errorCode
-from coherence.upnp.core.DIDLLite import DIDLElement
+from modCoherence.upnp.core.soap_service import UPnPPublisher
+from modCoherence.upnp.core.soap_service import errorCode
+from modCoherence.upnp.core.DIDLLite import DIDLElement
 
-from coherence.upnp.core import service
+from modCoherence.upnp.core import service
 
-from coherence import log
+from modCoherence import log
 
 class ContentDirectoryControl(service.ServiceControl,UPnPPublisher):
 
@@ -57,7 +57,7 @@ class ContentDirectoryServer(service.ServiceServer, resource.Resource,
         return '<html><p>root of the ContentDirectory</p><p><ul>%s</ul></p></html>'% self.listchilds(request.uri)
 
     def upnp_X_GetFeatureList(self, *args, **kwagrs):
-        from coherence.extern.et import ET
+        from modCoherence.extern.et import ET
         
         def create_containers(containers={}):
             root = ET.Element('Features')

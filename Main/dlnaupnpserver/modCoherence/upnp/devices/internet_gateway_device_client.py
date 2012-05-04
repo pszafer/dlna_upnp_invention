@@ -5,9 +5,9 @@
 
 # Copyright 2010 Frank Scholz <dev@coherence-project.org>
 
-from coherence.upnp.devices.wan_device_client import WANDeviceClient
+from modCoherence.upnp.devices.wan_device_client import WANDeviceClient
 
-from coherence import log
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

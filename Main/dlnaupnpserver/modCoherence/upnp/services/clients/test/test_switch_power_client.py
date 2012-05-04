@@ -15,10 +15,10 @@ from twisted.trial import unittest
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 
-from coherence import __version__
-from coherence.base import Coherence
-from coherence.upnp.core.uuid import UUID
-from coherence.upnp.devices.control_point import DeviceQuery
+from modCoherence import __version__
+from modCoherence.base import Coherence
+from modCoherence.upnp.core.uuid import UUID
+from modCoherence.upnp.devices.control_point import DeviceQuery
 
 import coherence.extern.louie as louie
 

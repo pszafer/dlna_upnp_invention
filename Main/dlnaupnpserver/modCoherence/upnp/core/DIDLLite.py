@@ -21,12 +21,12 @@ my_namespaces = { DC_NS: 'dc',
                  UPNP_NS: 'upnp',
                  SEC:'sec'
                  }
-from coherence.extern.et import ET, namespace_map_update, ElementInterface
+from modCoherence.extern.et import ET, namespace_map_update, ElementInterface
 namespace_map_update(my_namespaces)
 
-from coherence.upnp.core import utils
+from modCoherence.upnp.core import utils
 
-from coherence import log
+from modCoherence import log
 
 
 def qname(tag,ns=''):

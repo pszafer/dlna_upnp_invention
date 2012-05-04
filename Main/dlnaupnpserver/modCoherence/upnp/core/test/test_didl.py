@@ -13,7 +13,7 @@ from copy import copy
 
 from twisted.trial import unittest
 
-from coherence.upnp.core import DIDLLite
+from modCoherence.upnp.core import DIDLLite
 
 didl_fragment = """
 <DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"

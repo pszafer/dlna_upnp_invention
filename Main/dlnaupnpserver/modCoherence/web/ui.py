@@ -14,7 +14,7 @@ from zope.interface import implements, Interface
 
 import coherence.extern.louie as louie
 
-from coherence import log
+from modCoherence import log
 
 class IWeb(Interface):
 

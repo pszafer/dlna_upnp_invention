@@ -9,9 +9,9 @@ import time
 
 from twisted.internet import defer
 
-from coherence.upnp.core.service import Service
-from coherence.upnp.core import utils
-from coherence import log
+from modCoherence.upnp.core.service import Service
+from modCoherence.upnp.core import utils
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

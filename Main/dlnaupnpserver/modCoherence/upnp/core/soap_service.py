@@ -7,13 +7,13 @@ from twisted.web import server, resource
 from twisted.python import failure
 from twisted.internet import defer
 
-from coherence import log, SERVER_ID
+from modCoherence import log, SERVER_ID
 
-from coherence.extern.et import ET, namespace_map_update
+from modCoherence.extern.et import ET, namespace_map_update
 
-from coherence.upnp.core.utils import parse_xml
+from modCoherence.upnp.core.utils import parse_xml
 
-from coherence.upnp.core import soap_lite
+from modCoherence.upnp.core import soap_lite
 
 import coherence.extern.louie as louie
 
@@ -90,7 +90,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
 
     def render(self, request):
         """Handle a SOAP command."""
-        data = request.content._read()
+        data = request.content.read()
         headers = request.getAllHeaders()
         self.info('soap_request:', headers)
 

@@ -12,7 +12,7 @@
 """
 from twisted.python.util import OrderedDict
 
-from coherence.extern.et import ET
+from modCoherence.extern.et import ET
 
 NS_SOAP_ENV = "{http://schemas.xmlsoap.org/soap/envelope/}"
 NS_SOAP_ENC = "{http://schemas.xmlsoap.org/soap/encoding/}"

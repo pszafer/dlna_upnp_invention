@@ -11,14 +11,14 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from twisted.internet import task
 
-from coherence.upnp.core import utils
+from modCoherence.upnp.core import utils
 
 import coherence.extern.louie as louie
 
 SSDP_PORT = 1900
 SSDP_ADDR = '239.255.255.250'
 
-from coherence import log
+from modCoherence import log
 
 class MSearch(DatagramProtocol, log.Loggable):
     logCategory = 'msearch'

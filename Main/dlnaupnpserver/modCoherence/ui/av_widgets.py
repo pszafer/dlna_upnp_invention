@@ -291,7 +291,7 @@ class DeviceImportWidget(object):
 
             def reply(r):
                 print 'reply',r['Result'], r['ObjectID']
-                from coherence.upnp.core import DIDLLite
+                from modCoherence.upnp.core import DIDLLite
 
                 didl = DIDLLite.DIDLElement.fromString(r['Result'])
                 item = didl.getItems()[0]
@@ -470,7 +470,7 @@ class TreeWidget(object):
             path = self.treeview.get_dest_row_at_pos(x, y)
             iter = self.store.get_iter(path[0])
             title,object_id,upnp_class,item = self.store.get(iter,NAME_COLUMN,ID_COLUMN,UPNP_CLASS_COLUMN,DIDL_COLUMN)
-            from coherence.upnp.core import DIDLLite
+            from modCoherence.upnp.core import DIDLLite
             if upnp_class == 'object.item.videoItem':
                 self.tooltip_path = object_id
                 item = DIDLLite.DIDLElement.fromString(item).getItems()[0]
@@ -690,7 +690,7 @@ class TreeWidget(object):
 
         def reply(r):
             #print "browse_reply - %s of %s returned" % (r['NumberReturned'],r['TotalMatches'])
-            from coherence.upnp.core import DIDLLite
+            from modCoherence.upnp.core import DIDLLite
 
             child = self.store.iter_children(iter)
             if child:

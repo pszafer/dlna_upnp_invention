@@ -5,11 +5,11 @@
 
 # Copyright 2010 Frank Scholz <dev@coherence-project.org>
 
-from coherence.upnp.devices.wan_connection_device_client import WANConnectionDeviceClient
+from modCoherence.upnp.devices.wan_connection_device_client import WANConnectionDeviceClient
 
-from coherence.upnp.services.clients.wan_common_interface_config_client import WANCommonInterfaceConfigClient
+from modCoherence.upnp.services.clients.wan_common_interface_config_client import WANCommonInterfaceConfigClient
 
-from coherence import log
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

@@ -22,7 +22,7 @@ import signal
 
 import sys
 import time
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 def set_exit_handler(func):
     if os.name == "nt":
         try:
@@ -166,6 +166,7 @@ class Runserver(threading.Thread):
         
     def run(self):
         self.reactor.callWhenRunning(self.mediaServer.run)
+      #  self.reactor._disconnectedDeferred = defer.Deferred()
         self.reactor.run(installSignalHandlers=0)
     
     def stop(self):
@@ -210,6 +211,7 @@ if __name__ == "__main__":
     
     dbCursor = DBCursor(db_path=dbpath)
     dbCursor.insert(DBContent("/home/xps/Wideo/test"))
+    dbCursor.insert(DBContent("/home/xps/Wideo/The.Way.Back.720p.Bluray.x264-CBGB"))
     backendObject = BackendObject(dbCursor, "test")
     
     

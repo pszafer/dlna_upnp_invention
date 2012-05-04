@@ -20,7 +20,7 @@ from twisted.internet import reactor, error
 from twisted.internet import task
 from twisted.web.http import datetimeToString
 
-from coherence import log, SERVER_ID
+from modCoherence import log, SERVER_ID
 
 import coherence.extern.louie as louie
 

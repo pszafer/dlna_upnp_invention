@@ -76,14 +76,18 @@ def upnpserverstatus(request):
         try:
             json = dict(method="echo",id=None,params=[])
             from webob import Request as Requ
+            #TODO REMOVE FROM DB if PID doesn't exist!!!
             entries = DBAddress.objects.all()[:1].values().get()
             ip = str(entries['ip_address'])
             port = str(entries['port'])
-            if ip is None or port == str(0):
+            if (ip is None or ip is '') or port == str(0):
                 checkAddress(request)
                 entries = DBAddress.objects.all().values().get()
                 ip = str(entries['ip_address'])
                 port = str(entries['port'])
+                if (ip is None or ip is '') or port == str(0):
+                    resp = upnpservererror(self, "00")
+                    return resp
             address = "http://" + ip + ":" + port
             print "Address %s" % address
             req = Requ.blank(address)
@@ -97,16 +101,21 @@ def upnpserverstatus(request):
             update_upnpservice_status_db(True)
             return response
         except Exception, e:
-            print "Exception %s" % str(e)
-            checkAddress(request)
-            entries = DBAddress.objects.all().values().get()
-            ip = str(entries['ip_address'])
-            port = str(entries['port'])
-            response = HttpResponse()
-            response['Content-Type'] = "application/json"
-            response.write("{\"Status\":\"Failed\"}")
-            update_upnpservice_status_db(False)
-            return response
+            resp = upnpservererror(self, e)
+            return resp
+
+def upnpservererror(self, exception):
+    print "Exception %s" % str(e)
+    checkAddress(request)
+    entries = DBAddress.objects.all().values().get()
+    ip = str(entries['ip_address'])
+    port = str(entries['port'])
+    response = HttpResponse()
+    response['Content-Type'] = "application/json"
+    response.write("{\"Status\":\"Failed\"}")
+    update_upnpservice_status_db(False)
+    return response
+    
 
 def update_mangaginservice_status_db(status = False):
     object = ServiceStatus.objects.get(name="manage")
@@ -176,7 +185,7 @@ def getuuid(request):
     return response
     
 def setname(request):
-    json = dict(method="add_content",id=None,params=["/home/xps/Wideo/test/"])
+    json = dict(method="add_content",id=None,params=["/home/xps/Wideo/test/aaa"])
     from webob import Request as Requ
     req = Requ.blank("http://localhost:7777/")
     req.method = 'POST'

@@ -26,3 +26,5 @@ class ServiceStatus(models.Model):
 ServiceStatus.objects.all().delete()
 ServiceStatus(name="manage").save()
 ServiceStatus(name="upnp").save()
+DBAddress.objects.all().delete()
+DBAddress(ip_address='', port=0).save()

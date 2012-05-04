@@ -16,7 +16,7 @@ from twisted.trial import unittest
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 
-from coherence.base import Coherence
+from modCoherence.base import Coherence
 
 import coherence.extern.louie as louie
 

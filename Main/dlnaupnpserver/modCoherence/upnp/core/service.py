@@ -8,16 +8,16 @@ import os
 
 import time
 import urllib2
-from coherence.upnp.core import action
-from coherence.upnp.core import event
-from coherence.upnp.core import variable
+from modCoherence.upnp.core import action
+from modCoherence.upnp.core import event
+from modCoherence.upnp.core import variable
 
-from coherence.upnp.core import utils
-from coherence.upnp.core.soap_proxy import SOAPProxy
-from coherence.upnp.core.soap_service import errorCode
-from coherence.upnp.core.event import EventSubscriptionServer
+from modCoherence.upnp.core import utils
+from modCoherence.upnp.core.soap_proxy import SOAPProxy
+from modCoherence.upnp.core.soap_service import errorCode
+from modCoherence.upnp.core.event import EventSubscriptionServer
 
-from coherence.extern.et import ET
+from modCoherence.extern.et import ET
 
 from twisted.web import static
 from twisted.internet import defer, reactor
@@ -26,7 +26,7 @@ from twisted.internet import task
 
 import coherence.extern.louie as louie
 
-from coherence import log
+from modCoherence import log
 
 global subscribers
 subscribers = {}

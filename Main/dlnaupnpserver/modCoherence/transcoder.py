@@ -24,7 +24,7 @@ import urllib
 from twisted.web import resource, server
 from twisted.internet import protocol
 
-from coherence import log
+from modCoherence import log
 
 import struct
 

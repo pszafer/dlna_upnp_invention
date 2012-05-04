@@ -24,14 +24,14 @@ import dbus.service
 
 #import dbus.glib
 
-from coherence import __version__
-from coherence.upnp.core import DIDLLite
-from coherence.dbus_constants import *
-from coherence.upnp.core.utils import parse_xml
+from modCoherence import __version__
+from modCoherence.upnp.core import DIDLLite
+from modCoherence.dbus_constants import *
+from modCoherence.upnp.core.utils import parse_xml
 
 import coherence.extern.louie as louie
 
-from coherence import log
+from modCoherence import log
 
 from twisted.internet import reactor
 from twisted.internet import defer, task

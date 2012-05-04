@@ -8,9 +8,9 @@ from os.path import abspath
 import urlparse
 from urlparse import urlsplit
 
-from coherence.extern.et import parse_xml as et_parse_xml
+from modCoherence.extern.et import parse_xml as et_parse_xml
 
-from coherence import SERVER_ID
+from modCoherence import SERVER_ID
 
 
 from twisted.web import server, http, static
@@ -463,11 +463,14 @@ class ReverseProxyUriResource(ReverseProxyResource):
         self.resetTarget(host, port, path, params)
 
 
-class myHTTPPageGetter(client.HTTPPageGetter):
+class yourHTTPPageGetter(client.HTTPPageGetter):
+
+
 
     followRedirect = True
 
     def connectionMade(self):
+        self._disconnectedDeferred = defer.Deferred()
         method = getattr(self, 'method', 'GET')
         #print "myHTTPPageGetter", method, self.factory.path
         self.sendCommand(method, self.factory.path)
@@ -485,13 +488,16 @@ class myHTTPPageGetter(client.HTTPPageGetter):
             if key.lower() != "content-length":
                 # we calculated it on our own
                 self.sendHeader(key, value)
+        self.sendHeader("test", "test")
         self.endHeaders()
         self.headers = {}
 
         if data is not None:
             self.transport.write(data)
+        self.bleee = "test"
 
     def handleResponse(self, response):
+        self._disconnectedDeferred = defer.Deferred()
         if self.quietLoss:
             return
         if self.failed:
@@ -517,7 +523,7 @@ class myHTTPPageGetter(client.HTTPPageGetter):
 
 class HeaderAwareHTTPClientFactory(client.HTTPClientFactory):
 
-    protocol = myHTTPPageGetter
+    protocol = yourHTTPPageGetter
     noisy = False
 
     def __init__(self, url, method='GET', postdata=None, headers=None,
@@ -547,6 +553,7 @@ class HeaderAwareHTTPClientFactory(client.HTTPClientFactory):
 
         self.waiting = 1
         self.deferred = defer.Deferred()
+        self._disconnectedDeferred = defer.Deferred()
         self.response_headers = None
 
     def buildProtocol(self, addr):
@@ -556,6 +563,7 @@ class HeaderAwareHTTPClientFactory(client.HTTPClientFactory):
         if self.timeout:
             timeoutCall = reactor.callLater(self.timeout, p.timeout)
             self.deferred.addBoth(self._cancelTimeout, timeoutCall)
+            self._disconnectedDeferred = defer.Deferred()
         return p
 
     def page(self, page):

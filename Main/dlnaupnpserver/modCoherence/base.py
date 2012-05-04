@@ -17,21 +17,21 @@ from twisted.web import resource,static
 
 import coherence.extern.louie as louie
 
-from coherence import __version__
-from coherence import log
+from modCoherence import __version__
+from modCoherence import log
 
-from coherence.upnp.core.ssdp import SSDPServer
-from coherence.upnp.core.msearch import MSearch
-from coherence.upnp.core.device import Device, RootDevice
-from coherence.upnp.core.utils import parse_xml, get_ip_address, get_host_address
+from modCoherence.upnp.core.ssdp import SSDPServer
+from modCoherence.upnp.core.msearch import MSearch
+from modCoherence.upnp.core.device import Device, RootDevice
+from modCoherence.upnp.core.utils import parse_xml, get_ip_address, get_host_address
 
-from coherence.upnp.core.utils import Site
+from modCoherence.upnp.core.utils import Site
 
-from coherence.upnp.devices.control_point import ControlPoint
-from coherence.upnp.devices.media_server import MediaServer
-from coherence.upnp.devices.media_renderer import MediaRenderer
-from coherence.upnp.devices.binary_light import BinaryLight
-from coherence.upnp.devices.dimmable_light import DimmableLight
+from modCoherence.upnp.devices.control_point import ControlPoint
+from modCoherence.upnp.devices.media_server import MediaServer
+from modCoherence.upnp.devices.media_renderer import MediaRenderer
+from modCoherence.upnp.devices.binary_light import BinaryLight
+from modCoherence.upnp.devices.dimmable_light import DimmableLight
 
 
 try:
@@ -110,7 +110,7 @@ class WebServer(log.Loggable):
                 raise ImportError
 
             from nevow import appserver, inevow
-            from coherence.web.ui import Web, IWeb, WebUI
+            from modCoherence.web.ui import Web, IWeb, WebUI
             from twisted.python.components import registerAdapter
 
             def ResourceFactory( original):
@@ -200,7 +200,7 @@ class Plugins(log.Loggable):
             self._collect_from_module()
 
     def _collect_from_module(self):
-        from coherence.extern.simple_plugin import Reception
+        from modCoherence.extern.simple_plugin import Reception
         reception = Reception(os.path.join(os.path.dirname(__file__),'backends'), log=self.warning)
         self.info(reception.guestlist())
         for cls in reception.guestlist():
@@ -400,18 +400,18 @@ class Coherence(log.Loggable):
             self.ctrl = ControlPoint(self)
 
         if self.config.get('json','no') == 'yes':
-            from coherence.json import JsonInterface
+            from modCoherence.json import JsonInterface
             self.json = JsonInterface(self.ctrl)
 
         if self.config.get('transcoding', 'no') == 'yes':
-            from coherence.transcoder import TranscoderManager
+            from modCoherence.transcoder import TranscoderManager
             self.transcoder_manager = TranscoderManager(self)
 
 
         self.dbus = None
         if self.config.get('use_dbus', 'no') == 'yes':
             try:
-                from coherence import dbus_service
+                from modCoherence import dbus_service
                 if self.ctrl == None:
                     self.ctrl = ControlPoint(self)
                 self.ctrl.auto_client_append('InternetGatewayDevice')
@@ -421,8 +421,8 @@ class Coherence(log.Loggable):
                 self.debug(traceback.format_exc())
             else:
                 if self.config.get('enable_mirabeau', 'no') == 'yes':
-                    from coherence import mirabeau
-                    from coherence.tube_service import MirabeauProxy
+                    from modCoherence import mirabeau
+                    from modCoherence.tube_service import MirabeauProxy
 
                     mirabeau_cfg = self.config.get('mirabeau', {})
 
@@ -460,7 +460,7 @@ class Coherence(log.Loggable):
             self.debug(traceback.format_exc())
 
     def remove_plugin(self, plugin):
-        """ removes a backend from Coherence          """
+        """ removes a backend from modCoherence          """
         """ plugin is the object return by add_plugin """
         """ or an UUID string                         """
 
@@ -482,7 +482,7 @@ class Coherence(log.Loggable):
 
     def writeable_config(self):
         """ do we have a new-style config file """
-        from coherence.extern.simple_config import ConfigItem
+        from modCoherence.extern.simple_config import ConfigItem
         if isinstance(self.config,ConfigItem):
             return True
         return False

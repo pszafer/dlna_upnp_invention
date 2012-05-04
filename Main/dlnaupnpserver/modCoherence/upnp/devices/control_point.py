@@ -10,18 +10,18 @@ from twisted.internet import task
 from twisted.internet import reactor
 from twisted.web import xmlrpc, client
 
-from coherence.upnp.core import service
-from coherence.upnp.core.event import EventServer
+from modCoherence.upnp.core import service
+from modCoherence.upnp.core.event import EventServer
 
-from coherence.upnp.devices.media_server_client import MediaServerClient
-from coherence.upnp.devices.media_renderer_client import MediaRendererClient
-from coherence.upnp.devices.binary_light_client import BinaryLightClient
-from coherence.upnp.devices.dimmable_light_client import DimmableLightClient
-from coherence.upnp.devices.internet_gateway_device_client import InternetGatewayDeviceClient
+from modCoherence.upnp.devices.media_server_client import MediaServerClient
+from modCoherence.upnp.devices.media_renderer_client import MediaRendererClient
+from modCoherence.upnp.devices.binary_light_client import BinaryLightClient
+from modCoherence.upnp.devices.dimmable_light_client import DimmableLightClient
+from modCoherence.upnp.devices.internet_gateway_device_client import InternetGatewayDeviceClient
 
 import coherence.extern.louie as louie
 
-from coherence import log
+from modCoherence import log
 
 class DeviceQuery(object):
 
@@ -333,9 +333,9 @@ def startXMLRPC( control_point, port):
 
 if __name__ == '__main__':
 
-    from coherence.base import Coherence
-    from coherence.upnp.devices.media_server_client import MediaServerClient
-    from coherence.upnp.devices.media_renderer_client import MediaRendererClient
+    from modCoherence.base import Coherence
+    from modCoherence.upnp.devices.media_server_client import MediaServerClient
+    from modCoherence.upnp.devices.media_renderer_client import MediaRendererClient
 
     config = {}
     config['logmode'] = 'warning'

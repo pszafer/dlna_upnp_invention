@@ -8,9 +8,9 @@ from dbus import PROPERTIES_IFACE
 from telepathy.interfaces import CHANNEL_TYPE_DBUS_TUBE, CONN_INTERFACE, \
      CHANNEL_INTERFACE, CHANNEL_INTERFACE_TUBE, CONNECTION
 
-from coherence.extern.telepathy import client, tube
-from coherence.dbus_constants import BUS_NAME, OBJECT_PATH, DEVICE_IFACE, SERVICE_IFACE
-from coherence import dbus_service
+from modCoherence.extern.telepathy import client, tube
+from modCoherence.dbus_constants import BUS_NAME, OBJECT_PATH, DEVICE_IFACE, SERVICE_IFACE
+from modCoherence import dbus_service
 
 class MirabeauTubeConsumerMixin(tube.TubeConsumerMixin):
 
@@ -47,7 +47,7 @@ class MirabeauTubeConsumerMixin(tube.TubeConsumerMixin):
         elif service == SERVICE_IFACE:
             tube.remote_object = dbus_service.DBusService(None, None, tube_conn)
         else:
-            self.info("tube %r is not coming from Coherence", service)
+            self.info("tube %r is not coming from modCoherence", service)
             return tube_conn
 
         if initiator_handle not in self._coherence_tubes:

@@ -11,19 +11,19 @@ from twisted.internet import task
 from twisted.internet import reactor
 from twisted.web import resource, static
 
-from coherence import __version__
+from modCoherence import __version__
 
-from coherence.extern.et import ET, indent
+from modCoherence.extern.et import ET, indent
 
-from coherence.upnp.core.utils import StaticFile
+from modCoherence.upnp.core.utils import StaticFile
 
-from coherence.upnp.services.servers.connection_manager_server import ConnectionManagerServer
-from coherence.upnp.services.servers.rendering_control_server import RenderingControlServer
-from coherence.upnp.services.servers.av_transport_server import AVTransportServer
+from modCoherence.upnp.services.servers.connection_manager_server import ConnectionManagerServer
+from modCoherence.upnp.services.servers.rendering_control_server import RenderingControlServer
+from modCoherence.upnp.services.servers.av_transport_server import AVTransportServer
 
-from coherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot, BasicDeviceMixin
+from modCoherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot, BasicDeviceMixin
 
-from coherence import log
+from modCoherence import log
 
 class HttpRoot(DeviceHttpRoot):
     logCategory = 'mediarenderer'

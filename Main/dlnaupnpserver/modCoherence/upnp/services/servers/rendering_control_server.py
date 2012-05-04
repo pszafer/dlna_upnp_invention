@@ -7,9 +7,9 @@
 
 from twisted.web import resource
 
-from coherence.upnp.core.soap_service import UPnPPublisher
+from modCoherence.upnp.core.soap_service import UPnPPublisher
 
-from coherence.upnp.core import service
+from modCoherence.upnp.core import service
 
 class RenderingControlControl(service.ServiceControl,UPnPPublisher):
 

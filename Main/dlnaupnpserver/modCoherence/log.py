@@ -3,8 +3,8 @@
 
 # Copyright 2007, Philippe Normand <philippe@fluendo.com>
 
-from coherence.extern.log import log as externlog
-from coherence.extern.log.log import *
+from modCoherence.extern.log import log as externlog
+from modCoherence.extern.log.log import *
 import os
 
 def human2level(levelname):

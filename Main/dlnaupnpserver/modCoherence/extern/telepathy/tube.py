@@ -8,7 +8,7 @@ from telepathy.interfaces import CHANNEL_INTERFACE, CONNECTION_INTERFACE_REQUEST
 from telepathy.constants import CONNECTION_HANDLE_TYPE_ROOM, \
      SOCKET_ACCESS_CONTROL_CREDENTIALS
 
-from coherence.extern.telepathy.client import Client
+from modCoherence.extern.telepathy.client import Client
 
 class TubePublisherMixin(object):
 

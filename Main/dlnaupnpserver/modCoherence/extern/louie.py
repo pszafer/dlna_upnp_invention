@@ -3,7 +3,7 @@
 """
 
 import warnings
-from coherence.dispatcher import Dispatcher
+from modCoherence.dispatcher import Dispatcher
 
 class Any(object): pass
 class All(object): pass

@@ -21,7 +21,7 @@ from dbus import PROPERTIES_IFACE
 
 from telepathy.interfaces import CHANNEL_TYPE_DBUS_TUBE
 
-from coherence import log
+from modCoherence import log
 
 class TubeConnection(Connection, log.Loggable):
     logCategory = "tube_connection"

@@ -10,14 +10,14 @@ from twisted.web import resource
 from twisted.python import failure
 from twisted.internet import task
 
-from coherence.upnp.core.soap_service import UPnPPublisher
-from coherence.upnp.core.soap_service import errorCode
+from modCoherence.upnp.core.soap_service import UPnPPublisher
+from modCoherence.upnp.core.soap_service import errorCode
 
-from coherence.upnp.core import service
+from modCoherence.upnp.core import service
 
-from coherence.upnp.core.DIDLLite  import build_dlna_additional_info
+from modCoherence.upnp.core.DIDLLite  import build_dlna_additional_info
 
-from coherence import log
+from modCoherence import log
 
 
 class ConnectionManagerControl(service.ServiceControl,UPnPPublisher):

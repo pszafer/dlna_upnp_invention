@@ -9,19 +9,19 @@ from twisted.internet import task
 from twisted.internet import reactor
 from twisted.web import resource, static
 
-from coherence import __version__
+from modCoherence import __version__
 
-from coherence.extern.et import ET, indent
+from modCoherence.extern.et import ET, indent
 
-from coherence.upnp.services.servers.switch_power_server import SwitchPowerServer
-from coherence.upnp.services.servers.dimming_server import DimmingServer
+from modCoherence.upnp.services.servers.switch_power_server import SwitchPowerServer
+from modCoherence.upnp.services.servers.dimming_server import DimmingServer
 
 
-from coherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot, BasicDeviceMixin
+from modCoherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot, BasicDeviceMixin
 
 import coherence.extern.louie as louie
 
-from coherence import log
+from modCoherence import log
 
 class HttpRoot(DeviceHttpRoot):
     logCategory = 'dimmablelight'

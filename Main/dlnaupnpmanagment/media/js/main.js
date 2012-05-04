@@ -27,6 +27,7 @@ function server_start(){
 	$.ajax({
 		url: "runserver",
 		success: function(data) {
+			alert("test");
 			setTimeout(function(){
 			$.ajax({
 				url: "checkAddress",
@@ -34,11 +35,11 @@ function server_start(){
 					alert("ok");
 				},
 				error: function(x,y,z) {
-					alert("error");
+					alert("error2");
 				}
 			});
 			get_all_status();
-			}, 1000);					
+			}, 100);					
 		},
 		error: function(x,y,z) {
 			alert("error");

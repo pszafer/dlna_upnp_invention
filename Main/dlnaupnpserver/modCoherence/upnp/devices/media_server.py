@@ -19,25 +19,25 @@ from twisted.web import resource, server
 from twisted.python import util
 from twisted.python.filepath import FilePath
 
-from coherence.extern.et import ET, indent
+from modCoherence.extern.et import ET, indent
 
-from coherence import __version__
+from modCoherence import __version__
 
-from coherence.upnp.core.service import ServiceServer
-from coherence.upnp.core import utils
-from coherence.upnp.core.utils import StaticFile, BufferFile
-from coherence.upnp.core.utils import ReverseProxyResource
+from modCoherence.upnp.core.service import ServiceServer
+from modCoherence.upnp.core import utils
+from modCoherence.upnp.core.utils import StaticFile, BufferFile
+from modCoherence.upnp.core.utils import ReverseProxyResource
 
 
-from coherence.upnp.services.servers.connection_manager_server import ConnectionManagerServer
-from coherence.upnp.services.servers.content_directory_server import ContentDirectoryServer
-from coherence.upnp.services.servers.scheduled_recording_server import ScheduledRecordingServer
-from coherence.upnp.services.servers.media_receiver_registrar_server import MediaReceiverRegistrarServer
-from coherence.upnp.services.servers.media_receiver_registrar_server import FakeMediaReceiverRegistrarBackend
+from modCoherence.upnp.services.servers.connection_manager_server import ConnectionManagerServer
+from modCoherence.upnp.services.servers.content_directory_server import ContentDirectoryServer
+from modCoherence.upnp.services.servers.scheduled_recording_server import ScheduledRecordingServer
+from modCoherence.upnp.services.servers.media_receiver_registrar_server import MediaReceiverRegistrarServer
+from modCoherence.upnp.services.servers.media_receiver_registrar_server import FakeMediaReceiverRegistrarBackend
 
-from coherence.upnp.devices.basics import BasicDeviceMixin
+from modCoherence.upnp.devices.basics import BasicDeviceMixin
 
-from coherence import log
+from modCoherence import log
 
 COVER_REQUEST_INDICATOR = re.compile("(.*?cover\.[A-Z\a-z]{3,4}(&WMHME=1)?)$")
 
@@ -45,7 +45,9 @@ ATTACHMENT_REQUEST_INDICATOR = re.compile(".*?attachment=.*$")
 
 TRANSCODED_REQUEST_INDICATOR = re.compile(".*/transcoded/.*$")
 
-SUBTITLES_REQUEST_INDICATOR = re.compile(".srt")
+SUBTITLES_SRT_REQUEST_INDICATOR = re.compile(".srt")
+SUBTITLES_SMI_REQUEST_INDICATOR = re.compile(".smi")
+SUBTITLES_TXT_REQUEST_INDICATOR = re.compile(".txt")
 
 class MSRoot(resource.Resource, log.Loggable):
     logCategory = 'mediaserver'
@@ -128,7 +130,7 @@ class MSRoot(resource.Resource, log.Loggable):
                 dfr.isLeaf = True
                 return dfr
 
-            if ATTACHMENT_REQUEST_INDICATOR.match(request.uri) or SUBTITLES_REQUEST_INDICATOR.match(request.uri):
+            if ATTACHMENT_REQUEST_INDICATOR.match(request.uri) or SUBTITLES_SRT_REQUEST_INDICATOR.match(request.uri) or SUBTITLES_TXT_REQUEST_INDICATOR.match(request.uri) or SUBTITLES_SMI_REQUEST_INDICATOR.match(request.uri):
                 self.info("request attachment %r for id %s" % (request.args,path))
                 def got_attachment(ch):
                     try:
@@ -139,7 +141,7 @@ class MSRoot(resource.Resource, log.Loggable):
                                 type = request.args['type'][0]
                                 self.info("request transcoding %r %r" % (format, type))
                                 try:
-                                    from coherence.transcoder import TranscoderManager
+                                    from modCoherence.transcoder import TranscoderManager
                                     manager = TranscoderManager(self.server.coherence)
                                     return manager.select(format,ch.item.attachments[request.args['attachment'][0]])
                                 except:
@@ -176,7 +178,7 @@ class MSRoot(resource.Resource, log.Loggable):
                     format = request.uri.split('/')[-1] #request.args['transcoded'][0]
                     uri = ch.get_path()
                     try:
-                        from coherence.transcoder import TranscoderManager
+                        from modCoherence.transcoder import TranscoderManager
                         manager = TranscoderManager(self.server.coherence)
                         return manager.select(format,uri)
                     except:

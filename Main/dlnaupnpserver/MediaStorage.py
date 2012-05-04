@@ -202,12 +202,13 @@ class MediaItem(BackendItem):
                     _internal_url = 'file://' + _path
                     res = Resource(_internal_url, 'internal:%s:%s:*' % (hostname, mimetype))    #create internal resource    
                 if 'video' in mimetype:
-                    res, res1, res2 = self.create_VideoItem(res, size, external_url, mimetype, path, urlbase)
+                    res, res1, resSub = self.create_VideoItem(res, size, external_url, mimetype, path, urlbase)
                     res3 = self.createThumbnails(path, urlbase)
                     self.item.res.append(res)                                                       #add resource to item
                     self.item.res.append(res1)                                                   #add resource to item
-                    if res2:
-                        self.item.res.append(res2)                                                   #add resource with subtitles to item
+                    if resSub:
+                        for res2 in resSub:
+                            self.item.res.append(res2)                                                   #add resource with subtitles to item
                     if res3:
                         self.item.res.append(res3)
                 elif 'audio' in mimetype:
@@ -435,43 +436,60 @@ class MediaItem(BackendItem):
         caption,_ =  os.path.splitext(self.get_path())
         caption_srt = caption + '.srt'
         caption_smi = caption + '.smi'
+        caption_txt = caption + '.txt'
         #new_id = self.id.split(".")[0]+".SRT"
         captions = {}
-        if os.path.exists(caption_srt):
-            new_id = self.id.split(".")[0]+".SRT"
-            mime = "text/srt"
-            self.caption_size = os.path.getsize(caption_srt)
-            captions[mime] = caption_srt
         if os.path.exists(caption_smi):
+            data = {}
             caption = caption_smi
-            new_id = self.id.split(".")[0]+".SMI"
+            data["id"] = self.id.split(".")[0]+".SMI"
             mime = "smi/caption"
             self.caption_size = os.path.getsize(caption_smi)
-            captions[mime] = caption_smi
-        for mime,caption in captions.iteritems():
+            data["caption"] = caption_smi
+            captions[mime] = data
+        if os.path.exists(caption_txt):
+            data = {}
+            data["id"] = self.id.split(".")[0]+".TXT" #LG ONLY TXT
+            mime = "text/plain"
+            self.caption_size = os.path.getsize(caption_txt)
+            data["caption"] = caption_txt
+            captions[mime] = data
+        if os.path.exists(caption_srt):
+            data = {}
+            data["id"] = self.id.split(".")[0]+".SRT"
+            mime = "text/srt"
+            self.caption_size = os.path.getsize(caption_srt)           
+            data["caption"] = caption_srt
+            captions[mime] = data
+        resSub = None
+        for mime,data in captions.iteritems():
             item = Item
-            self.store.store[new_id] = MediaItem(object_id=new_id,
+            self.store.store[data["id"]] = MediaItem(object_id=data["id"],
                                            itemClass=item,
-                                           path=caption,
+                                           path=data["caption"],
                                            parent=None,
                                            urlbase=urlbase,
                                            hostname = self.hostname,
                                            mimetype=mime,
                                            store=self,
                                            subtitles=True)
-            hash_from_path = str(id(caption))
+            hash_from_path = str(id(data["caption"]))
             mimetype = mime
-            res2 = Resource(urlbase+new_id,'http-get:*:%s:%s' % (mimetype, '*'))
-            self.caption = urlbase+new_id
-            self.item.caption = urlbase+new_id
+            if resSub is None:
+                resSub = []
+            res2 = Resource(urlbase+data["id"],'http-get:*:%s:%s' % (mimetype, '*'))
+            #self.caption = urlbase+data["id"]
+            #self.item.caption = urlbase+data["id"]
             if not hasattr(self.item, 'attachments'):
                 self.item.attachments = {}
-                if caption_smi is not None:
+                if caption_smi is not None and data["caption"] is caption_smi:
                     self.item.attachments[hash_from_path] = utils.StaticFile(caption_smi)
-                else:
+                if caption_srt is not None and data["caption"] is caption_srt:
                     self.item.attachments[hash_from_path] = utils.StaticFile(caption_srt)
-            return res, res1, res2
-        return res, res1, None
+                if caption_txt is not None and data["caption"] is caption_txt:
+                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_txt)
+            resSub.append(res2)
+        return res, res1, resSub
     
     def create_AudioItem(self, res, size, external_url, mimetype, path):
         '''
@@ -644,10 +662,13 @@ class MediaStore(BackendStore):
         '''
         content = []
         for x in self.content:
-            if os.path.isdir(x.content):
-                content.append(os.path.abspath(x.content))
-            else:
-                self.backendObject.removeObject(x)
+            try:
+                if os.path.isdir(x.content):
+                    content.append(os.path.abspath(x.content))
+                else:
+                    self.backendObject.removeObject(x)
+            except Exception, e:
+                self.warning("No file?? %s" % str(e))
         return content  
 
     def divideAllElementsInSeparateContainers(self):
@@ -909,7 +930,7 @@ class MediaStore(BackendStore):
         if itemClass == None:
                 return None
         
-        if mimetype not in ('root', 'directory') and 'video' in mimetype:                               #id will be no id +
+        if mimetype not in ('root', 'directory'):                               #id will be no id + and 'video' in mimetype
             #_,ext =  os.path.splitext(path)
             object_id = str(self.getNextID())# + ext.upper()
             self.store[object_id] = MediaItem(object_id=object_id,

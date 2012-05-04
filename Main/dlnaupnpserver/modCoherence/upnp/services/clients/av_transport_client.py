@@ -3,7 +3,7 @@
 
 # Copyright 2006-2008, Frank Scholz <coherence@beebits.net>
 
-from coherence import log
+from modCoherence import log
 
 class AVTransportClient(log.Loggable):
     logCategory = 'avtransportclient'

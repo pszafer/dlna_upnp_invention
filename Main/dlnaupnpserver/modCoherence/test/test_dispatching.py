@@ -1,7 +1,7 @@
 
 from twisted.trial import unittest
 from twisted.internet import defer
-from coherence.dispatcher import Dispatcher, UnknownSignal, Receiver, \
+from modCoherence.dispatcher import Dispatcher, UnknownSignal, Receiver, \
         SignalingProperty, ChangedSignalingProperty, CustomSignalingProperty
 
 class TestDispatcher(Dispatcher):

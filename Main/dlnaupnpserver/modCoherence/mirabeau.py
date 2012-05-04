@@ -6,11 +6,11 @@
 from telepathy.interfaces import ACCOUNT_MANAGER, ACCOUNT
 import dbus
 
-from coherence.dbus_constants import BUS_NAME, DEVICE_IFACE, SERVICE_IFACE
-from coherence.extern.telepathy.mirabeau_tube_publisher import MirabeauTubePublisherConsumer
-from coherence.tube_service import TubeDeviceProxy
-from coherence import log
-from coherence.upnp.devices.control_point import ControlPoint
+from modCoherence.dbus_constants import BUS_NAME, DEVICE_IFACE, SERVICE_IFACE
+from modCoherence.extern.telepathy.mirabeau_tube_publisher import MirabeauTubePublisherConsumer
+from modCoherence.tube_service import TubeDeviceProxy
+from modCoherence import log
+from modCoherence.upnp.devices.control_point import ControlPoint
 
 from twisted.internet import defer
 

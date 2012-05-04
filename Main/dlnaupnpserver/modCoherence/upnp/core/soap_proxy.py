@@ -5,13 +5,13 @@
 
 from twisted.python import failure
 
-from coherence import log
+from modCoherence import log
 
-from coherence.extern.et import ET, namespace_map_update
+from modCoherence.extern.et import ET, namespace_map_update
 
-from coherence.upnp.core.utils import getPage, parse_xml
+from modCoherence.upnp.core.utils import getPage, parse_xml
 
-from coherence.upnp.core import soap_lite
+from modCoherence.upnp.core import soap_lite
 
 class SOAPProxy(log.Loggable):
     """ A Proxy for making remote SOAP calls.

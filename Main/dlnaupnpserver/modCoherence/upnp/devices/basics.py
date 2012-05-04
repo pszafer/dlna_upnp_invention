@@ -11,14 +11,14 @@ from twisted.python import util
 from twisted.web import resource, static
 from twisted.internet import reactor
 
-from coherence import __version__
+from modCoherence import __version__
 
-from coherence.extern.et import ET, indent
+from modCoherence.extern.et import ET, indent
 
 import coherence.extern.louie as louie
 
 
-from coherence import log
+from modCoherence import log
 
 
 class DeviceHttpRoot(resource.Resource, log.Loggable):
@@ -202,7 +202,7 @@ class BasicDeviceMixin(object):
             if not self.uuid.startswith('uuid:'):
                 self.uuid = 'uuid:' + self.uuid
         except KeyError:
-            from coherence.upnp.core.uuid import UUID
+            from modCoherence.upnp.core.uuid import UUID
             self.uuid = UUID()
 
         self.backend = None

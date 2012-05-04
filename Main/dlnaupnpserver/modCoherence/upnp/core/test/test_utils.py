@@ -11,7 +11,7 @@ Test cases for L{upnp.core.utils}
 
 from twisted.trial import unittest
 
-from coherence.upnp.core.utils import *
+from modCoherence.upnp.core.utils import *
 
 # This data is joined using CRLF pairs.
 testChunkedData = ['200',

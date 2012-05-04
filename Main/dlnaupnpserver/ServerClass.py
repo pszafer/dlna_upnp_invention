@@ -13,7 +13,7 @@ Created on 05-07-2011
 '''
 
 from twisted.internet import reactor
-from coherence.base import Coherence 
+from modCoherence.base import Coherence 
 import gnome.ui
 import gnomevfs
 import gettext

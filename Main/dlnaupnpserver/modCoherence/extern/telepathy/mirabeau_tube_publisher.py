@@ -15,9 +15,9 @@ from telepathy.interfaces import CHANNEL_INTERFACE_TUBE, CHANNEL_TYPE_DBUS_TUBE,
      CHANNEL_INTERFACE
 from telepathy.constants import TUBE_CHANNEL_STATE_LOCAL_PENDING
 
-from coherence.extern.telepathy import client, tube, mirabeau_tube_consumer
-from coherence.dbus_constants import BUS_NAME, OBJECT_PATH, DEVICE_IFACE, SERVICE_IFACE
-from coherence import dbus_service
+from modCoherence.extern.telepathy import client, tube, mirabeau_tube_consumer
+from modCoherence.dbus_constants import BUS_NAME, OBJECT_PATH, DEVICE_IFACE, SERVICE_IFACE
+from modCoherence import dbus_service
 
 from twisted.internet import task
 

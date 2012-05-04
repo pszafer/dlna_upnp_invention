@@ -3,11 +3,11 @@
 
 # Copyright 2006, Frank Scholz <coherence@beebits.net>
 
-from coherence.upnp.services.clients.connection_manager_client import ConnectionManagerClient
-from coherence.upnp.services.clients.rendering_control_client import RenderingControlClient
-from coherence.upnp.services.clients.av_transport_client import AVTransportClient
+from modCoherence.upnp.services.clients.connection_manager_client import ConnectionManagerClient
+from modCoherence.upnp.services.clients.rendering_control_client import RenderingControlClient
+from modCoherence.upnp.services.clients.av_transport_client import AVTransportClient
 
-from coherence import log
+from modCoherence import log
 
 import coherence.extern.louie as louie
 

@@ -8,7 +8,7 @@
 
 # Copyright 2008, Frank Scholz <coherence@beebits.net>
 
-from coherence.extern.et import ET as ElementTree, indent, parse_xml
+from modCoherence.extern.et import ET as ElementTree, indent, parse_xml
 
 class ConfigItem(object):
     """ the base """

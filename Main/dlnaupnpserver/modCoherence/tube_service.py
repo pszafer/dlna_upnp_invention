@@ -16,19 +16,19 @@ from twisted.web import resource
 from twisted.internet import defer
 from twisted.python.util import OrderedDict
 
-from coherence.upnp.core.utils import parse_xml
+from modCoherence.upnp.core.utils import parse_xml
 
-from coherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot
-from coherence.upnp.core import service
-from coherence.upnp.core.soap_service import UPnPPublisher
+from modCoherence.upnp.devices.basics import RootDeviceXML, DeviceHttpRoot
+from modCoherence.upnp.core import service
+from modCoherence.upnp.core.soap_service import UPnPPublisher
 
-from coherence.upnp.core import action
-from coherence.upnp.core import variable
+from modCoherence.upnp.core import action
+from modCoherence.upnp.core import variable
 
-from coherence.upnp.core import DIDLLite
-from coherence.upnp.core.utils import ReverseProxyUriResource
+from modCoherence.upnp.core import DIDLLite
+from modCoherence.upnp.core.utils import ReverseProxyUriResource
 
-from coherence import log
+from modCoherence import log
 
 class MirabeauProxy(resource.Resource, log.Loggable):
     logCategory = 'mirabeau'

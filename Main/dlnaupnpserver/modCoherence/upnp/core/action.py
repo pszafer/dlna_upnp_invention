@@ -7,7 +7,7 @@
 from twisted.python import failure
 from twisted.python.util import OrderedDict
 
-from coherence import log
+from modCoherence import log
 
 class Argument:
 

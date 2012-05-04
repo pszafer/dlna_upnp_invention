@@ -13,8 +13,8 @@ from twisted.web.http import datetimeToString
 from twisted.internet.protocol import Protocol, ClientCreator, _InstanceFactory
 from twisted.python import failure
 
-from coherence import log, SERVER_ID
-from coherence.upnp.core import utils
+from modCoherence import log, SERVER_ID
+from modCoherence.upnp.core import utils
 
 import coherence.extern.louie as louie
 
@@ -314,9 +314,10 @@ def subscribe(service, action='subscribe'):
             p.transport.writeSomeData(request)
         except AttributeError:
             log.info(log_category, "transport for event %r already gone", action)
-       # print "event.subscribe.send_request", d
+            # print "event.subscribe.send_request", d
         #return d
 
+    #TODO some errors on rev and forward || przewijaanie!
     def got_error(failure, action):
         log.info(log_category, "error on %s request with %s" % (action,service.get_base_url()))
         log.debug(log_category, failure)

@@ -17,11 +17,11 @@ from twisted.internet.defer import Deferred
 
 from twisted.python.filepath import FilePath
 
-from coherence import __version__
-from coherence.base import Coherence
-from coherence.upnp.core.uuid import UUID
-from coherence.upnp.devices.control_point import DeviceQuery
-from coherence.upnp.core import DIDLLite
+from modCoherence import __version__
+from modCoherence.base import Coherence
+from modCoherence.upnp.core.uuid import UUID
+from modCoherence.upnp.devices.control_point import DeviceQuery
+from modCoherence.upnp.core import DIDLLite
 
 import coherence.extern.louie as louie
 

@@ -2,9 +2,9 @@
 
 from twisted.trial.unittest import TestCase
 
-from coherence.transcoder import TranscoderManager, get_transcoder_name
+from modCoherence.transcoder import TranscoderManager, get_transcoder_name
 
-from coherence.transcoder import (PCMTranscoder, WAVTranscoder, MP3Transcoder,
+from modCoherence.transcoder import (PCMTranscoder, WAVTranscoder, MP3Transcoder,
         MP4Transcoder, MP2TSTranscoder, ThumbTranscoder, GStreamerTranscoder,
         ExternalProcessPipeline)
 

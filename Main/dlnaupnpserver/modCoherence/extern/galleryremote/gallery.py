@@ -36,7 +36,7 @@
 #             (both patches from Yuti Takhteyev
 
 
-from coherence.upnp.core.utils import getPage
+from modCoherence.upnp.core.utils import getPage
 
 import StringIO
 import string

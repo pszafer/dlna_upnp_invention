@@ -9,8 +9,8 @@ import sys, threading
 from twisted.internet import reactor, defer
 from twisted.python import log
 
-from coherence.upnp.core import DIDLLite
-from coherence.upnp.core import utils
+from modCoherence.upnp.core import DIDLLite
+from modCoherence.upnp.core import utils
 
 global work, pending
 work = []
