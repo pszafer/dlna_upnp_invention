@@ -24,6 +24,7 @@ mimetypes.add_type('audio/mpeg', '.mp3')
 mimetypes.add_type('audio/x-musepack', '.mpc')
 mimetypes.add_type('audio/x-wavpack', '.wv')
 mimetypes.add_type('audio/x-wav', '.wav')
+mimetypes.add_type('audio/mpeg', '.flac')
 
 mimetypes.add_type('video/mp4', '.mp4')
 mimetypes.add_type('video/mpegts', '.ts')
@@ -34,6 +35,7 @@ mimetypes.add_type('video/avi', '.mkv')
 mimetypes.add_type('text/plain', '.srt')
 mimetypes.add_type('image/png', '.png')
 mimetypes.add_type('image/jpeg', '.jpg')
+#TODO MP3 SUPPORT LG
 
 #mimetypes.add_type('video/x-matroska', '.mkv')
 ## Sorting helpers
@@ -82,7 +84,8 @@ def create_thumbnail(uri, mimetype):
     
     
 def create_thumbnail_via_gnome(uri):
-    mimetype = mimetype = gnomevfs.get_mime_type(uri)
+    return False #Orepair it
+    mimetype = gnomevfs.get_mime_type(uri)
     thumbFactory = ui.ThumbnailFactory(ui.THUMBNAIL_SIZE_NORMAL)
     if thumbFactory.can_thumbnail(uri, mimetype,0):
         thumbnail = thumbFactory.generate_thumbnail(uri, mimetype)
@@ -123,7 +126,7 @@ def import_thumbnail(uri):
 
 
 
-def getFileMetadata(filename):
+def getFileMetadata(filename):#TODO repair time!! music/flac
     import subprocess
     information = {}
     try:

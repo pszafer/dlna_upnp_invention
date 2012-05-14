@@ -364,6 +364,12 @@ class MediaItem(BackendItem):
         '''
         return self.cover
     
+    def get_caption(self):
+        '''
+        Get captionn - subtitles srt
+        '''
+        return self.caption
+    
     def get_path(self):
         '''
         Get real path of file
@@ -458,7 +464,7 @@ class MediaItem(BackendItem):
             data = {}
             data["id"] = self.id.split(".")[0]+".SRT"
             mime = "text/srt"
-            self.caption_size = os.path.getsize(caption_srt)           
+            self.caption_size = os.path.getsize(caption_srt)    
             data["caption"] = caption_srt
             captions[mime] = data
         resSub = None
@@ -482,12 +488,14 @@ class MediaItem(BackendItem):
             #self.item.caption = urlbase+data["id"]
             if not hasattr(self.item, 'attachments'):
                 self.item.attachments = {}
-                if caption_smi is not None and data["caption"] is caption_smi:
-                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_smi)
-                if caption_srt is not None and data["caption"] is caption_srt:
-                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_srt)
-                if caption_txt is not None and data["caption"] is caption_txt:
-                    self.item.attachments[hash_from_path] = utils.StaticFile(caption_txt)
+            if caption_smi is not None and data["caption"] is caption_smi:
+                self.item.attachments[hash_from_path] = utils.StaticFile(caption_smi)
+            if caption_srt is not None and data["caption"] is caption_srt:
+                self.item.attachments[hash_from_path] = utils.StaticFile(caption_srt)
+                self.caption = res2.data
+            if caption_txt is not None and data["caption"] is caption_txt:
+                self.item.attachments[hash_from_path] = utils.StaticFile(caption_txt)
+                    #self.caption = caption_txt
             resSub.append(res2)
         return res, res1, resSub
     
@@ -503,7 +511,7 @@ class MediaItem(BackendItem):
         res1 = Resource(external_url, 'http-get:*:%s:*' % (mimetype,))                   #create external resource
         duration = None
         bitrate = None
-        if 'mpeg' in mimetype:
+        if 'mpeg' or 'flac' in mimetype:
             from mutagen.mp3 import MP3
             audio = MP3(path)
             duration = helpers.s2hms(audio.info.length)
@@ -563,8 +571,9 @@ class MediaItem(BackendItem):
             resolution = resolution[:len(resolution)-1]
             res.resolution =resolution 
             return res
-        except Exception as inst:
-            print inst
+        except:
+            return None
+            pass
 
 def log(event):
     print '%s was written' % event.subject

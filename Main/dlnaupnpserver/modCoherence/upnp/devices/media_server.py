@@ -93,8 +93,8 @@ class MSRoot(resource.Resource, log.Loggable):
                 ch = self.store.get_by_id(path)
                 try:
                     location = ch.get_path()
-                    caption = ch.caption
-                    size = ch.size
+                    caption = ch.get_caption()
+                    size = ch.caption_size
                     if caption == None:
                         raise KeyError
                     request.setResponseCode(200)
@@ -103,6 +103,8 @@ class MSRoot(resource.Resource, log.Loggable):
                     request.setHeader('contentFeatures.dlna.org', "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000")
                     request.setHeader('CaptionInfo.sec', caption)
                     return static.Data('','video/x-msvideo')
+                    #repair this shitttt!!!!!!!!!!
+                
                 except:
                     print traceback.format_exc()
                     request.setResponseCode(404)
