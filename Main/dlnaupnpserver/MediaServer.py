@@ -199,7 +199,7 @@ class RunRPCServer():
             options.host, int(options.port),
             app)
         print 'Serving on http://%s:%s' % (options.host, options.port)
-        self.backendObject.set_name("buuu")
+        self.backendObject.set_name("Nazwa serwera")
         try:
             server.serve_forever()
         except Exception:

@@ -509,15 +509,15 @@ class RootDeviceXML(static.Data):
             ET.SubElement(d, 'friendlyName').text = friendly_name
         else:
             ET.SubElement(d, 'friendlyName').text = friendly_name + ' : 1 : Windows Media Connect'
-        ET.SubElement(d, 'manufacturer').text = 'beebits.net'
-        ET.SubElement(d, 'manufacturerURL').text = 'http://coherence.beebits.net'
-        ET.SubElement(d, 'modelDescription').text = 'Coherence UPnP A/V MediaServer'
+        ET.SubElement(d, 'manufacturer').text = 'Based on Coherence Framework'
+        ET.SubElement(d, 'manufacturerURL').text = 'NO URL'
+        ET.SubElement(d, 'modelDescription').text = 'DLNA UPnP A/V MediaServer'
         if xbox_hack == False:
-            ET.SubElement(d, 'modelName').text = 'Coherence UPnP A/V MediaServer'
+            ET.SubElement(d, 'modelName').text = 'DLNA UPnP A/V MediaServer'
         else:
             ET.SubElement(d, 'modelName').text = 'Windows Media Connect'
         ET.SubElement(d, 'modelNumber').text = __version__
-        ET.SubElement(d, 'modelURL').text = 'http://coherence.beebits.net'
+        ET.SubElement(d, 'modelURL').text = 'Based on Coherence Framework'
         ET.SubElement(d, 'serialNumber').text = '0000001'
         ET.SubElement(d, 'UDN').text = uuid
         ET.SubElement(d, 'UPC').text = ''
