@@ -58,6 +58,7 @@ class DBSettings(Base):
         self.port = port
         self.enable_inotify = int(enable_inotify)
         self.max_child_items = int(max_child_items)
+        
     
     def getjson(self):
         dict = {}
@@ -111,45 +112,46 @@ class DBCursor(object):
         engine = create_engine(uri)
         Base.metadata.create_all(engine)
         Session.configure(bind=engine)        
+        self.session = Session()
     
     def commit(self):
-        session = Session()
-        session.commit()
-        session.close()
+        self.session.expunge_all()
+        self.session.commit()
+        self.session.close()
     
     def update(self, object):
-        session = Session()
-        session.add(object)
-        session.commit()
-        session.close()
+        self.session.expunge_all()
+        self.session.add(object)
+        self.session.commit()
+        self.session.close()
     
     def set_ip(self, ipaddress):
         #self.info("Setting ip to use by Media server")
-        session = Session()
-        settings = session.query(DBSettings).first()
+        self.session.expunge_all()
+        settings = self.session.query(DBSettings).first()
         settings.ip_addr = ipaddress
-        session.flush()
-        session.close()
+        self.session.flush()
+        self.session.close()
     
     def set_port(self, port):
         #self.info("Setting ip to use by Media server")
-        session = Session()
-        settings = session.query(DBSettings).first()
+        self.session.expunge_all()
+        settings = self.session.query(DBSettings).first()
         settings.port = port
-        session.flush()
-        session.close()
+        self.session.flush()
+        self.session.close()
         
     def insert(self, object):
-        session = Session()
-        session.add(object)
-        session.close()
+        self.session.expunge_all()
+        self.session.add(object)
+        self.session.close()
     
     def insertCommit(self, object):
-        session = Session()
-        session.add(object)
-        session.flush()
+        self.session.expunge_all()
+        self.session.add(object)
+        self.session.flush()
         id = object.id
-        session.close()
+        self.session.close()
         return id
     
     def removeObject(self, type, id):
@@ -160,14 +162,15 @@ class DBCursor(object):
             table = DBContent()
         elif type == "ignore_patterns":
             table = DBIgnorePatterns()
-        session = Session()
-        object = session.query(type(table)).get(id)
-        session.delete(object)
-        session.flush()
-        session.close()
+#        object = session.query(type(table)).get(id)
+        object = id
+        self.session.expunge_all()
+        self.session.delete(object)
+        self.session.flush()
+        self.session.close()
     
     def select(self, tableName, condition=None, single = True):
-        session = Session()
+        session = self.session
         table = None
         if tableName == "settings":
             table = DBSettings()
@@ -175,6 +178,7 @@ class DBCursor(object):
             table = DBContent()
         elif tableName == "ignore_patterns":
             table = DBIgnorePatterns()
+        self.session.expunge_all()
         if not condition:
             if single:
                 return session.query(type(table)).first()

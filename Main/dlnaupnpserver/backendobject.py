@@ -150,8 +150,9 @@ class BackendObject(log.Loggable):
             self.info("PROBLEM "+ e)
         return dict
     
-    def removeObject(self, object):
-        self.dbCursor.removeObject(object)
+    def removeObject(self, type, id):
+        self.dbCursor.removeObject(type, id)
+        
     def echo(self):
         self.info("ECHO")
         dict = {}

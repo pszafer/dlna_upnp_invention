@@ -18,11 +18,13 @@ except ImportError:
     try:
         from elementtree import ElementTree as ET
         import elementtree
+        import modElementTree as ET
         #print "ElementTree: using elementtree.ElementTree as ET"
     except ImportError:
         """ this seems to be necessary with the python2.5 on the Maemo platform """
         try:
             from xml.etree import cElementTree as ET
+            import modElementTree as ET
             from xml import etree as elementtree
             #print "ElementTree: using xml.etree.cElementTree as ET"
         except ImportError:

@@ -10,7 +10,7 @@ from Daemon import Daemon
 from MediaServer import MediaServer, Runserver, RunRPCServer
 import os
 from threading import Lock
-from Database2 import DBCursor, DBContent
+from Database2 import DBCursor
 from backendobject import BackendObject
 import signal
 
@@ -29,16 +29,16 @@ def set_exit_handler(func):
         signal.signal(signal.SIGUSR1, func)
 
 class MyDaemon(Daemon):
+    def __init__(self, **kwargs):
+        self.serverProcess = None
+        Daemon.__init__(self, **kwargs)
+    
     def run(self):
         path_to_db = "media.db"
         dbpath = os.path.abspath(path_to_db)
         lock = Lock()
-        
         dbCursor = DBCursor(db_path=dbpath)
-        dbCursor.insert(DBContent("/home/xps/Wideo/test"))
-        dbCursor.insert(DBContent("/home/xps/Wideo/The.Way.Back.720p.Bluray.x264-CBGB"))
         backendObject = BackendObject(dbCursor, "test")
-        #backendObject.close_connection_to_db()
         mediaServer = MediaServer(backendObject=backendObject, lock=lock)
         self.serverProcess = Runserver(mediaServer)
         self.serverProcess.start()
@@ -62,8 +62,10 @@ if __name__ == "__main__":
             daemon.restart()
         else:
             print "Unknown command"
+            daemon.stop()
             sys.exit(2)
         sys.exit(0)
     else:
+        daemon.stop()
         print "usage: %s start|stop|restart" % sys.argv[0]
         sys.exit(2)

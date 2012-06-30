@@ -1,0 +1,73 @@
+<html>
+	<head>
+		<title>SETTINGS</title>
+		<style type="text/css">
+			h1 {
+				background: #C0C0C0;
+				padding: 20px;
+			}
+			div.update {
+				width: 90%;
+				padding: 5px;
+			}
+			div.even {
+				background: #ddd;
+			}
+			div.timestamp {
+				float: left;
+				font-weight: bold;
+			}
+			div.text {
+				float: left;
+				padding-left: 10px;
+			}
+			div.clear {
+				clear: both;
+				height: 1px;
+			}
+		</style>
+		
+		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
+		<script src="{{ MEDIA_URL }}js/jquery.logviewer.js""></script>
+		<script type="text/javascript">
+		
+		jQuery(document).bind("ready", function() {
+		     jQuery('#logcontent').logViewer({logUrl: '{{ MEDIA_URL }}daemon.log'});
+		});
+		</script>
+	</head>
+	<body>
+		<form>
+			<table id="maintable" cellspacing="0">
+				<tr id="maintablehead">
+					<td id="header" colspan="2">
+						<table id="htable" cellspacing="0">
+							<tr>
+								<td id="text">
+									<div class="title">DLNA UPNP SERVER</div>
+									<div class="version">VERSION TO GET</div>
+								</td>
+								<td class="logo">
+									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+								</td>
+							</tr>
+						</table>
+						
+					</td>
+				</tr>
+				<tr id="contentbody">
+					<td id="menu">
+						<h1>MENU</h1>
+ 						<script type="text/javascript">createmenu()</script>
+					</td>
+					<td id="content">
+						<textarea id="logcontent" WRAP="off" autocomplete="off">
+						</textarea>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</body>
+</html>

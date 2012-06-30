@@ -279,7 +279,7 @@ class MSRoot(resource.Resource, log.Loggable):
                 # invalid method requested    
                 request.setResponseCode(405)
                 return static.Data("<html><p>This resource does not allow the requested HTTP method</p></html>",'text/html')
-
+        request.setHeader('Connection', 'close')
         if self.children.has_key(path):
             return self.children[path]
         if request.uri == '/':
@@ -322,7 +322,7 @@ class MSRoot(resource.Resource, log.Loggable):
     def prepare_headers(self,ch,request):
         request.setHeader('transferMode.dlna.org', request._dlna_transfermode)
         if hasattr(ch,'item') and hasattr(ch.item, 'res'):
-            request.setHeader('content-type', ch.get_mimetype())
+            request.setHeader('content-type', ch.get_mimetype()+"; charset=\"utf-8\"")
             if ch.item.res[0].protocolInfo is not None:
                 additional_info = ch.item.res[0].get_additional_info()
                 if additional_info != '*':
@@ -491,10 +491,13 @@ class RootDeviceXML(static.Data):
                         services=[],
                         devices=[],
                         icons=[],
-                        presentationURL=None):
+                        presentationURL=None,
+                        feature_list = None):
         uuid = str(uuid)
         root = ET.Element('root')
         root.attrib['xmlns']='urn:schemas-upnp-org:device-1-0'
+        root.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
+        root.attrib['xmlns:av']='urn:schemas-sony-com:av'
         device_type = 'urn:schemas-upnp-org:device:%s:%d' % (device_type, int(version))
         e = ET.SubElement(root, 'specVersion')
         ET.SubElement(e, 'major').text = '1'
@@ -505,22 +508,32 @@ class RootDeviceXML(static.Data):
 
         d = ET.SubElement(root, 'device')
         ET.SubElement(d, 'deviceType').text = device_type
+        x = ET.SubElement(d, 'dlna:X_DLNADOC')
+        x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
+        x.text = 'DMS-1.50'
+        #x = ET.SubElement(d, 'dlna:X_DLNADOC')
+        #x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
+        #x.text = 'M-DMS-1.50'
+        #x=ET.SubElement(d, 'dlna:X_DLNACAP')
+        #x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
+        #x.text = 'av-upload,image-upload,audio-upload'
+        
         if xbox_hack == False:
             ET.SubElement(d, 'friendlyName').text = friendly_name
         else:
             ET.SubElement(d, 'friendlyName').text = friendly_name + ' : 1 : Windows Media Connect'
         ET.SubElement(d, 'manufacturer').text = 'Based on Coherence Framework'
-        ET.SubElement(d, 'manufacturerURL').text = 'NO URL'
-        ET.SubElement(d, 'modelDescription').text = 'DLNA UPnP A/V MediaServer'
+        ET.SubElement(d, 'manufacturerURL').text = 'google.com'
+        ET.SubElement(d, 'modelDescription').text = 'DLNA UPnP AV MediaServer'
         if xbox_hack == False:
-            ET.SubElement(d, 'modelName').text = 'DLNA UPnP A/V MediaServer'
+            ET.SubElement(d, 'modelName').text = 'DLNA UPnP AV MediaServer'
         else:
             ET.SubElement(d, 'modelName').text = 'Windows Media Connect'
         ET.SubElement(d, 'modelNumber').text = __version__
-        ET.SubElement(d, 'modelURL').text = 'Based on Coherence Framework'
-        ET.SubElement(d, 'serialNumber').text = '0000001'
-        ET.SubElement(d, 'UDN').text = uuid
-        ET.SubElement(d, 'UPC').text = ''
+        ET.SubElement(d, 'modelURL').text = 'google.com'
+        ET.SubElement(d, 'serialNumber').text = "0000001"
+        ET.SubElement(d, 'UDN').text = uuid.strip("uuid:")
+        #ET.SubElement(d, 'UPC').text = ''
 
         if len(icons):
             e = ET.SubElement(d, 'iconList')
@@ -555,8 +568,8 @@ class RootDeviceXML(static.Data):
             e = ET.SubElement(d, 'serviceList')
             for service in services:
                 id = service.get_id()
-                if xbox_hack == False and id == 'X_MS_MediaReceiverRegistrar':
-                    continue
+                #if xbox_hack == False and id == 'X_MS_MediaReceiverRegistrar':
+                #    continue
                 s = ET.SubElement(e, 'service')
                 try:
                     namespace = service.namespace
@@ -573,13 +586,12 @@ class RootDeviceXML(static.Data):
                 except:
                     namespace = 'upnp-org'
                 ET.SubElement(s, 'serviceId').text = 'urn:%s:serviceId:%s' % (namespace,id)
-                ET.SubElement(s, 'SCPDURL').text = '/' + uuid[5:] + '/' + id + '/' + service.scpd_url
-                ET.SubElement(s, 'controlURL').text = '/' + uuid[5:] + '/' + id + '/' + service.control_url
-                ET.SubElement(s, 'eventSubURL').text = '/' + uuid[5:] + '/' + id + '/' + service.subscription_url
-
-                #ET.SubElement(s, 'SCPDURL').text = id + '/' + service.scpd_url
-                #ET.SubElement(s, 'controlURL').text = id + '/' + service.control_url
-                #ET.SubElement(s, 'eventSubURL').text = id + '/' + service.subscription_url
+                #ET.SubElement(s, 'SCPDURL').text = '/' + uuid[5:] + '/' + id + '/' + service.scpd_url
+                #ET.SubElement(s, 'controlURL').text = '/' + uuid[5:] + '/' + id + '/' + service.control_url
+                #ET.SubElement(s, 'eventSubURL').text = '/' + uuid[5:] + '/' + id + '/' + service.subscription_url
+                ET.SubElement(s, 'controlURL').text = '/' + id + '/' + service.control_url
+                ET.SubElement(s, 'eventSubURL').text =  '/' +  id + '/' + service.subscription_url
+                ET.SubElement(s, 'SCPDURL').text =  '/' + id + '/' + service.scpd_url
 
         if len(devices):
             e = ET.SubElement(d, 'deviceList')
@@ -587,21 +599,15 @@ class RootDeviceXML(static.Data):
         if presentationURL is None:
             presentationURL = '/' + uuid[5:]
         ET.SubElement(d, 'presentationURL').text = presentationURL
-
-        x = ET.SubElement(d, 'dlna:X_DLNADOC')
-        x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
-        x.text = 'DMS-1.50'
-        x = ET.SubElement(d, 'dlna:X_DLNADOC')
-        x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
-        x.text = 'M-DMS-1.50'
-        x=ET.SubElement(d, 'dlna:X_DLNACAP')
-        x.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
-        x.text = 'av-upload,image-upload,audio-upload'
-
+        if feature_list:
+            ET.SubElement(d, 'av:standardCDS').text = "5.0"
+            ET.SubElement(d, 'av:videoRoot').text = feature_list['videoItem']
+            ET.SubElement(d, 'av:musicRoot').text = feature_list['audioItem']
+            ET.SubElement(d, 'av:photoRoot').text = feature_list['imageItem']
         #if self.has_level(LOG_DEBUG):
         #    indent( root)
-        self.xml = """<?xml version="1.0" encoding="utf-8"?>""" + ET.tostring( root, encoding='utf-8')
-        static.Data.__init__(self, self.xml, 'text/xml')
+        self.xml = """<?xml version="1.0" encoding="utf-8"?>\r\n""" + ET.tostring( root, encoding='utf-8')
+        static.Data.__init__(self, self.xml, 'text/xml; charset=\"utf-8\"')
 
 class MediaServer(log.Loggable,BasicDeviceMixin):
     logCategory = 'mediaserver'
@@ -652,7 +658,7 @@ class MediaServer(log.Loggable,BasicDeviceMixin):
             if self.coherence.config.get('transcoding', 'no') == 'yes':
                 transcoding = True
             self.content_directory_server = ContentDirectoryServer(self,transcoding=transcoding)
-            self._services.append(self.content_directory_server)
+            self._services.insert(0,self.content_directory_server)
         except LookupError,msg:
             self.warning( 'ContentDirectoryServer', msg)
             raise LookupError,msg
@@ -688,7 +694,8 @@ class MediaServer(log.Loggable,BasicDeviceMixin):
                                     services=self._services,
                                     devices=self._devices,
                                     icons=self.icons,
-                                    presentationURL = self.presentationURL))
+                                    presentationURL = self.presentationURL,
+                                    feature_list = self.backend.feature_list))
             self.web_resource.putChild( 'xbox-description-%d.xml' % version,
                                     RootDeviceXML( self.coherence.hostname,
                                     str(self.uuid),
@@ -699,7 +706,8 @@ class MediaServer(log.Loggable,BasicDeviceMixin):
                                     services=self._services,
                                     devices=self._devices,
                                     icons=self.icons,
-                                    presentationURL = self.presentationURL))
+                                    presentationURL = self.presentationURL,
+                                    feature_list = self.backend.feature_list))
             version -= 1
 
         self.web_resource.putChild('ConnectionManager', self.connection_manager_server)

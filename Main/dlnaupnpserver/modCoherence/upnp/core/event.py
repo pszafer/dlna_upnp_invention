@@ -126,7 +126,7 @@ class EventSubscriptionServer(resource.Resource, log.Loggable):
                     s['created'] = time.time()
                 elif not headers.has_key('callback'):
                     request.setResponseCode(404)
-                    request.setHeader('SERVER', SERVER_ID)
+                    request.setHeader('SERVER', SERVER_ID + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00")
                     request.setHeader('CONTENT-LENGTH', 0)
                     return ""
             except:
@@ -142,7 +142,7 @@ class EventSubscriptionServer(resource.Resource, log.Loggable):
             request.setHeader('SID', s['sid'])
             #request.setHeader('Subscription-ID', sid)  wrong example in the UPnP UUID spec?
             request.setHeader('TIMEOUT', s['timeout'])
-            request.setHeader('SERVER', SERVER_ID)
+            request.setHeader('SERVER', SERVER_ID + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00")
             request.setHeader('CONTENT-LENGTH', 0)
         return ""
 

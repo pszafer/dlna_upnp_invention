@@ -435,10 +435,14 @@ class MediaItem(BackendItem):
         metadata = helpers.getFileMetadata(path)                                    #get file metadata like duration, bitrate using ffprobe
         res1 = Resource(external_url, 'http-get:*:%s:%s' % (mimetype,"DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000"))                   #create external resource
         self.size = res.size = res1.size = size
-        res.duration = res1.duration = metadata['duration']
-        res.bitrate = res1.bitrate = metadata['bitrate']
-        res.nrAudioChannels = res1.nrAudioChannels = metadata['audio_channels']
-        res.resolution = res1.resolution = metadata['resolution']
+        if metadata.has_key('duration'):
+            res.duration = res1.duration = metadata['duration']
+        if metadata.has_key('bitrate'):
+            res.bitrate = res1.bitrate = metadata['bitrate']
+        if metadata.has_key('audio_channels'):
+            res.nrAudioChannels = res1.nrAudioChannels = metadata['audio_channels']
+        if metadata.has_key('resolution'):    
+            res.resolution = res1.resolution = metadata['resolution']
         caption,_ =  os.path.splitext(self.get_path())
         caption_srt = caption + '.srt'
         caption_smi = caption + '.smi'
@@ -512,14 +516,20 @@ class MediaItem(BackendItem):
         duration = None
         bitrate = None
         if 'mpeg' or 'flac' in mimetype:
-            from mutagen.mp3 import MP3
-            audio = MP3(path)
-            duration = helpers.s2hms(audio.info.length)
-            bitrate = audio.info.bitrate
+            try:
+                from mutagen.mp3 import MP3
+                audio = MP3(path)
+                duration = helpers.s2hms(audio.info.length)
+                bitrate = audio.info.bitrate
+            except:
+                pass
         if 'x-wav' in mimetype:
-            import wave
-            wfile = wave.open (path, "r")
-            duration = helpers.s2hms((1.0 * wfile.getnframes ()) / wfile.getframerate ())
+            try:
+                import wave
+                wfile = wave.open (path, "r")
+                duration = helpers.s2hms((1.0 * wfile.getnframes ()) / wfile.getframerate ())
+            except:
+                pass
         res.size = res1.size = size
         res.duration = res1.duration = duration 
         res.bitrate = res1.bitrate = bitrate 
@@ -554,8 +564,11 @@ class MediaItem(BackendItem):
         @param path:        path to file we want to get thumbnail
         @param urlbase:     urlbase of file to create thumbnail uri
         '''
+        #TODO zamiast szukania po normal wpierw sprawdzic folder dlna
         try:
-            thumbnail_path,_,_ = helpers._find_thumbnail(helpers.import_thumbnail("file://"+path))     #get thumbnail path from gnome ~/.thumbnails
+            thumbnail_path,_,_ = helpers._find_thumbnail(helpers.import_thumbnail(path))     #get thumbnail path from gnome ~/.thumbnails
+            if thumbnail_path is None:
+                return None
             #hash_from_path = str(test)
     #       self.item.albumArtURI = self.url+'?attachment='+hash_from_path
             self.cover = thumbnail_path
@@ -571,9 +584,8 @@ class MediaItem(BackendItem):
             resolution = resolution[:len(resolution)-1]
             res.resolution =resolution 
             return res
-        except:
+        except Exception:
             return None
-            pass
 
 def log(event):
     print '%s was written' % event.subject
@@ -675,9 +687,10 @@ class MediaStore(BackendStore):
                 if os.path.isdir(x.content):
                     content.append(os.path.abspath(x.content))
                 else:
-                    self.backendObject.removeObject(x)
+                    self.backendObject.removeObject("content", x)
             except Exception, e:
                 self.warning("No file?? %s" % str(e))
+        content = list(set(content))
         return content  
 
     def divideAllElementsInSeparateContainers(self):

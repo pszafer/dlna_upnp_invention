@@ -139,9 +139,17 @@ class MediaServer(log.Loggable):
         kwargs['transcoding'] = settings.transcoding
         logofile = "file://"+os.path.abspath("logo2.png")
         kwargs['icons'] = [
-                           {'url': logofile,
-                            'mimetype' : 'image/png'}
-                           ,]
+                           {'mimetype' : 'image/png',
+                            'url': logofile,
+                            'width':'48',
+                            'height':'48',
+                            'depth':'24'}
+                           ,
+                           {'mimetype' : 'image/png',
+                            'url': logofile,
+                            'width':'120',
+                            'height':'120',
+                            'depth':'24'}]
         if settings.enable_inotify == 0:
             kwargs['enable_inotify'] = "no" 
         else: 
@@ -166,10 +174,12 @@ class Runserver(threading.Thread):
         
     def run(self):
         self.reactor.callWhenRunning(self.mediaServer.run)
-      #  self.reactor._disconnectedDeferred = defer.Deferred()
+        #self.reactor._disconnectedDeferred = defer.Deferred()
         self.reactor.run(installSignalHandlers=0)
     
     def stop(self):
+        print "STOPPING"
+        self.info("STOPPING")
         self.mediaServer.stopMediaServer()
         self.reactor.stop()
         self.finished.set()
@@ -210,12 +220,10 @@ if __name__ == "__main__":
     lock = Lock()
     
     dbCursor = DBCursor(db_path=dbpath)
-    dbCursor.insert(DBContent("/home/xps/Wideo/test"))
-    dbCursor.insert(DBContent("/home/xps/Wideo/The.Way.Back.720p.Bluray.x264-CBGB"))
     backendObject = BackendObject(dbCursor, "test")
     
     
-    
+    #EXPUNGE HERE?
     #
     #backendObject.close_connection_to_db()
     mediaServer = MediaServer(backendObject=backendObject, lock=lock)

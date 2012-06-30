@@ -51,7 +51,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
 
                 self.check_valid_loop = task.LoopingCall(self.check_valid)
                 self.check_valid_loop.start(333.0, now=False)
-
+    #            self.is_begin = 0    #check if this is first run of program
             except error.CannotListenError, err:
                 self.warning("There seems to be already a SSDP server running on this host, no need starting a second one.")
 
@@ -80,7 +80,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
             print err
             print 'Arggg,', data
             import pdb; pdb.set_trace()
-
+        #is_msearch = False
         lines = header.split('\r\n')
         cmd = string.split(lines[0], ' ')
         lines = map(lambda x: x.replace(': ', ':', 1), lines[1:])
@@ -94,19 +94,22 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         if cmd[0] == 'M-SEARCH' and cmd[1] == '*':
             # SSDP discovery
             self.discoveryRequest(headers, (host, port))
+            #is_msearch = True
         elif cmd[0] == 'NOTIFY' and cmd[1] == '*':
             # SSDP presence
             self.notifyReceived(headers, (host, port))
         else:
             self.warning('Unknown SSDP command %s %s' % (cmd[0], cmd[1]))
-
+        #if self.is_begin > 1 and not is_msearch:
         # make raw data available
         # send out the signal after we had a chance to register the device
         louie.send('UPnP.SSDP.datagram_received', None, data, host, port)
+#        else:
+#            self.is_begin += 1
 
     def register(self, manifestation, usn, st, location,
                         server=SERVER_ID,
-                        cache_control='max-age=1800',
+                        cache_control='max-age=1810',
                         silent=False,
                         host=None):
         """Register a service or device that this SSDP server will
@@ -119,7 +122,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
         self.known[usn]['LOCATION'] = location
         self.known[usn]['ST'] = st
         self.known[usn]['EXT'] = ''
-        self.known[usn]['SERVER'] = server
+        self.known[usn]['SERVER'] = server + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00"
         self.known[usn]['CACHE-CONTROL'] = cache_control
 
         self.known[usn]['MANIFESTATION'] = manifestation
@@ -137,7 +140,7 @@ class SSDPServer(DatagramProtocol, log.Loggable):
             #self.callback("new_device", st, self.known[usn])
 
     def unRegister(self, usn):
-        self.msg("Un-registering %s" % usn)
+        self.msg("Un-registerincg %s" % usn)
         st = self.known[usn]['ST']
         if st == 'upnp:rootdevice':
             louie.send('Coherence.UPnP.SSDP.removed_device', None, device_type=st, infos=self.known[usn])
@@ -198,17 +201,16 @@ class SSDPServer(DatagramProtocol, log.Loggable):
                 headers['st'] == 'ssdp:all'):
                 response = []
                 response.append('HTTP/1.1 200 OK')
-
                 for k, v in i.items():
                     if k == 'USN':
                         usn = v
-                    if k not in ('MANIFESTATION','SILENT','HOST'):
+                    if k not in ('MANIFESTATION','SILENT','HOST', 'last-seen'):
                         response.append('%s: %s' % (k, v))
                 response.append('DATE: %s' % datetimeToString())
-
+                response.append('Content-Length: 0')
                 response.extend(('', ''))
-                delay = random.randint(0, int(headers['mx']))
-
+                #delay = random.randint(0, int(headers['mx']))
+                delay= 2
                 reactor.callLater(delay, self.send_it,
                                 '\r\n'.join(response), (host, port), delay, usn)
 

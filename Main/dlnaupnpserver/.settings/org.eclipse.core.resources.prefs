@@ -1,13 +1,18 @@
-#Fri May 04 23:42:04 CEST 2012
+#Tue Jun 26 15:55:17 CEST 2012
 eclipse.preferences.version=1
 encoding//flask/__init__.py=utf-8
 encoding//flask/app.py=utf-8
+encoding//flask/helpers.py=utf-8
 encoding//flask/views.py=utf-8
 encoding//modCoherence/backend.py=utf-8
+encoding//modCoherence/extern/et.py=utf-8
 encoding//modCoherence/extern/simple_config.py=utf-8
 encoding//modCoherence/json.py=utf-8
+encoding//modCoherence/test/test_transcoder.py=utf-8
 encoding//modCoherence/transcoder.py=utf-8
+encoding//modCoherence/upnp/core/test/test_utils.py=utf-8
 encoding//modCoherence/upnp/devices/basics.py=utf-8
+encoding//modCoherence/upnp/devices/binary_light.py=utf-8
 encoding//modCoherence/upnp/devices/internet_gateway_device_client.py=utf-8
 encoding//modCoherence/upnp/devices/media_renderer.py=utf-8
 encoding//modCoherence/upnp/devices/media_server.py=utf-8

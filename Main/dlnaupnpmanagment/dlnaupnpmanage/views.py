@@ -2,7 +2,8 @@
 from dlnaupnpmanagment.dlnaupnpmanage.models import DBContainer, Content, DBAddress, ServiceStatus
 from django.views.decorators.csrf import csrf_exempt
 
-from django.http import HttpResponse, HttpResponseServerError, HttpRequest
+from django.http import HttpResponse, HttpResponseServerError, HttpRequest,\
+    QueryDict
 from django.core import serializers
 from django.shortcuts import render_to_response
 from twisted.internet import reactor
@@ -86,7 +87,7 @@ def upnpserverstatus(request):
                 ip = str(entries['ip_address'])
                 port = str(entries['port'])
                 if (ip is None or ip is '') or port == str(0):
-                    resp = upnpservererror(self, "00")
+                    resp = upnpservererror(request, "00")
                     return resp
             address = "http://" + ip + ":" + port
             print "Address %s" % address
@@ -101,11 +102,11 @@ def upnpserverstatus(request):
             update_upnpservice_status_db(True)
             return response
         except Exception, e:
-            resp = upnpservererror(self, e)
+            resp = upnpservererror(request, e)
             return resp
 
-def upnpservererror(self, exception):
-    print "Exception %s" % str(e)
+def upnpservererror(request, exception):
+    print "Exception %s" % str(exception)
     checkAddress(request)
     entries = DBAddress.objects.all().values().get()
     ip = str(entries['ip_address'])
@@ -257,7 +258,9 @@ def execute_on_daemon(order):
     new_dir, _ = os.path.split(os.path.normpath(os.path.dirname(__file__)))
     new_dir, _ = os.path.split(new_dir)
     new_dir = os.path.join(new_dir, "dlnaupnpserver/MediaDaemon.py")
-    subprocess.Popen(["python", new_dir, order])
+    command = "echo '/usr/bin/python "+new_dir+" " + order +  "' | at now"
+    os.system(command)
+    #subprocess.Popen(["python", new_dir, order])
 
 def checkAddress(request):
     try:
@@ -289,7 +292,36 @@ def checkAddress(request):
 @csrf_exempt
 def addContent(request):
     if request.is_ajax() and request.POST:
-#        json = dict(method="add_new_path",id=None,params=[request.POST.get('content')])
+        json = dict(method="add_new_path",id=None,params=[request.POST.get('content')])
+        from webob import Request as Requ
+        req = Requ.blank("http://localhost:7777/")
+        req.method = 'POST'
+        req.content_type = 'application/json'
+        from simplejson import loads, dumps
+        req.body = dumps(json)
+        from wsgiproxy.exactproxy import proxy_exact_request
+        resp = req.get_response(proxy_exact_request)
+        json = loads(resp.body)
+        all_list = json['result']
+        if not 'False' in all_list:
+            list = update_content()
+            response = HttpResponse()
+            response['Content-Type'] = "text/javascript"
+            response.write(list)
+            return response
+        #return HttpResponseBadRequest('Only POST accepted')
+
+@csrf_exempt     
+def saveSettings(request):
+    if request.is_ajax() and request.POST:
+        import simplejson as json2
+        json = json2.dumps(request.POST)
+        #TODO send this json to server and load to db
+        response = HttpResponse()
+        response['Content-Type'] = "text/javascript"
+        response.write(list)
+        return response
+        #return HttpResponseBadRequest('Only POST accepted')
 #        from webob import Request as Requ
 #        req = Requ.blank("http://localhost:7777/")
 #        req.method = 'POST'
@@ -301,9 +333,20 @@ def addContent(request):
 #        json = loads(resp.body)
 #        all_list = json['result']
 #        if not 'False' in all_list:
-        list = update_content()
-        response = HttpResponse()
-        response['Content-Type'] = "text/javascript"
-        response.write(list)
-        return response
-        #return HttpResponseBadRequest('Only POST accepted')
+
+
+#DONE
+def logs(request):
+    if request.is_ajax():
+        print "index"
+    else:
+        from django.views.generic import list_detail
+        all_list = Content.objects.all()
+        if len(all_list) == 0:
+            list = update_content()
+            if list is not None:
+                for item in list:
+                    Content(path = item['content']).save()
+                    all_list = Content.objects.all()
+        return object_list(request, all_list, template_name='dlnaupnpmanage/logs.html')
+

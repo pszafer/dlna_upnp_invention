@@ -222,8 +222,9 @@ class Request(server.Request):
         self.site = self.channel.site
 
         # set various default headers
-        self.setHeader('server', SERVER_ID)
-        self.setHeader('date', http.datetimeToString())
+        header = "Coherence DLNADOC/1.50 UPnP/1.0 DLNADOC/1.00"
+        self.setHeader('server', header)
+        #self.setHeader('date', http.datetimeToString())
         self.setHeader('content-type', "text/html")
 
         # Resource Identification
@@ -665,7 +666,7 @@ class StaticFile(static.File):
         request.setHeader('accept-ranges','bytes')
 
         if self.type:
-            request.setHeader('content-type', self.type)
+            request.setHeader('content-type', self.type + "; charset=\"utf-8\"")
         if self.encoding:
             request.setHeader('content-encoding', self.encoding)
 
@@ -785,7 +786,7 @@ class BufferFile(static.File):
             request.setHeader('accept-ranges','bytes')
 
         if self.type:
-            request.setHeader('content-type', self.type)
+            request.setHeader('content-type', self.type + "; charset=\"utf-8\"")
         if self.encoding:
             request.setHeader('content-encoding', self.encoding)
 
@@ -864,7 +865,7 @@ class BufferFile(static.File):
         # size is the byte position to stop sending, not how many bytes to send
 
         BufferFileTransfer(f, size - f.tell(), request)
-		# and make sure the connection doesn't get closed
+        # and make sure the connection doesn't get closed
         return server.NOT_DONE_YET
 
 

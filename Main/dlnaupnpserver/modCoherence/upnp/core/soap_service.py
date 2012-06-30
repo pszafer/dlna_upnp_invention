@@ -49,7 +49,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
         request.setHeader("Content-type", mimeType)
         request.setHeader("Content-length", str(len(response)))
         request.setHeader("EXT", '')
-        request.setHeader("SERVER", SERVER_ID)
+        request.setHeader('SERVER', SERVER_ID + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00")
         request.write(response)
         request.finish()
 
@@ -124,7 +124,7 @@ class UPnPPublisher(resource.Resource, log.Loggable):
         #methodName, args, kwargs, ns = p._name, p._aslist, p._asdict, p._ns
 
         try:
-            headers['content-type'].index('text/xml')
+            headers['content-type'].index('text/xml; charset=\"utf-8\"')
         except:
             self._gotError(failure.Failure(errorCode(415)), request, methodName)
             return server.NOT_DONE_YET

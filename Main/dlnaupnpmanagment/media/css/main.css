@@ -61,7 +61,7 @@ form{
 
 #header {
 	background: #C0C0C0;
-	border-bottom: 2px dotted; #ddd;
+	border-bottom: 2px dotted #ddd;
 }
 
 #savecancel-table {
@@ -111,6 +111,13 @@ form{
 	width: 770px;
 }
 
+#logcontent {
+	padding: 5px 4px 20px 4px;
+	vertical-align: top;
+	width: 770px;
+	height: 400px;
+}
+
 #htable img {
 	
 	max-height: 130px;
@@ -119,14 +126,13 @@ form{
 #menu {
 	width: 130px;
 	font-size: 12px;
-	border-right: 1px solid; #f0f0f0;
+	border-right: 1px solid #f0f0f0;
 	padding: 0px 0;
 	vertical-align: top;
 }
 
 #menu a {
 display: block;
-//color: #af4141;
 }
 
 #menu a.indent1 {

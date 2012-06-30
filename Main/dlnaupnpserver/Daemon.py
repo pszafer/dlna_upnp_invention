@@ -42,6 +42,7 @@ class Daemon:
         self.verbose = verbose
         self.umask = umask
         self.daemon_alive = True
+        self.mediaServer = None
 
     def daemonize(self):
         """
@@ -136,7 +137,8 @@ class Daemon:
         """
         Stop the daemon
         """
-
+        self.stopMediaServer()
+        print "test2"
         if self.verbose >= 1:
             print "Stopping..."
 
@@ -193,8 +195,12 @@ class Daemon:
         You should override this method when you subclass Daemon. It will be called after the process has been
         daemonized by start() or restart().
         """
+    def stopMediaServer(self):
+        """
+        Override this method
+        """
+         
     def stopThread(self):
-        print "Here"
         self.serverProcess.stop()
 if __name__ == "__main__":
     pidno = sys.argv[1]

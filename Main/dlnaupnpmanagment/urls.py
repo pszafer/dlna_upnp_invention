@@ -8,10 +8,12 @@ from django.conf import settings
 from dlnaupnpmanagment import dlnaupnpmanage
 from django.views.generic import list_detail
 from django.views.generic.simple import redirect_to
+from django.views.generic import RedirectView
 admin.autodiscover()
 
 urlpatterns = patterns('',
     # Example:
+ #  url('', RedirectView.as_view(url='/dlnaupnpmanagment/status'), name='some_redirect'),
     url(r'^dlnaupnpmanagment/index', direct_to_template, {'template': 'dlnaupnpmanage/index.html'}),
     url(r'^dlnaupnpmanagment/$', redirect_to, {'url': '/dlnaupnpmanagment/status'}),
     url(r'^dlnaupnpmanagment/status', 'dlnaupnpmanagment.dlnaupnpmanage.views.index'),
@@ -26,6 +28,8 @@ urlpatterns = patterns('',
     url(r'^dlnaupnpmanagment/checkAddress', 'dlnaupnpmanagment.dlnaupnpmanage.views.checkAddress'),
     url(r'^dlnaupnpmanagment/getuuid', 'dlnaupnpmanagment.dlnaupnpmanage.views.getuuid'),
     url(r'^dlnaupnpmanagment/addContent', 'dlnaupnpmanagment.dlnaupnpmanage.views.addContent'),
+    url(r'^dlnaupnpmanagment/saveSettings', 'dlnaupnpmanagment.dlnaupnpmanage.views.saveSettings'),
+    url(r'^dlnaupnpmanagment/logs', 'dlnaupnpmanagment.dlnaupnpmanage.views.logs'),
     (r'^databrowse/(.*)', databrowse.site.root),
     # Uncomment the admin/doc line below to enable admin documentation:
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
