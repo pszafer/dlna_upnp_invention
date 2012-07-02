@@ -1,6 +1,7 @@
+{% load i18n %}
 <html>
 	<head>
-		<title>MEDIA ITEMS</title>
+		<title>{% trans "MEDIA ITEMS" %}</title>
 		<style type="text/css">
 			h1 {
 				background: #C0C0C0;
@@ -36,6 +37,7 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 
  -->
 		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/media.js"></script>
@@ -111,11 +113,11 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
  						<script type="text/javascript">createmenu()</script>
 					</td>
 					<td id="content">
-						<p>Autorefreshing is enabled</p>
-						<p>Refresh interval: 20 seconds</p>
+						<p>{% trans "Autorefreshing is enabled" %}</p>
+						<p>{% trans "Refresh interval: 20 seconds" %}</p>
 						<table id="media-table">
 							<tr>
-								<td id="service-td" colspan="2"><input type='button' class='controls' onclick='add_content_row()' value='Add content row' id='b_add' style='display:'></td>
+								<td id="service-td" colspan="2"><input type='button' class='controls' onclick='add_content_row()' value='{% trans "Add content row" %}' id='b_add' style='display:'></td>
 							</tr>
 						</table>
 						<table id="status-table">

@@ -1,0 +1,97 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-07-02 22:47+0200\n"
+"PO-Revision-Date: 2012-07-02 22:08+0100\n"
+"Last-Translator: Pawel Szafer <pszafer@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2)\n"
+
+#: media/js/main.js:3
+msgid "Status"
+msgstr "Status"
+
+#: media/js/main.js:4
+msgid "Settings"
+msgstr "Ustawienia"
+
+#: media/js/main.js:5
+msgid "Media"
+msgstr "Multimedia"
+
+#: media/js/main.js:6
+msgid "Log"
+msgstr "Dziennik zdarzeń"
+
+#: media/js/main.js:7
+msgid "Help"
+msgstr "Pomoc"
+
+#: media/js/media.js:1
+msgid "Delete"
+msgstr ""
+
+#: media/js/settings.js:8
+msgid "Name"
+msgstr ""
+
+#: media/js/settings.js:9
+msgid "IP Address"
+msgstr ""
+
+#: media/js/settings.js:10
+msgid "Port"
+msgstr ""
+
+#: media/js/settings.js:11
+msgid "Ignore patterns"
+msgstr ""
+
+#: media/js/settings.js:12
+msgid "Do mimetype containers"
+msgstr ""
+
+#: media/js/settings.js:13
+msgid "Transcoding"
+msgstr ""
+
+#: media/js/settings.js:14
+msgid "Icon"
+msgstr ""
+
+#: media/js/settings.js:15
+msgid "Max child items"
+msgstr ""
+
+#: media/js/settings.js:17
+msgid "Save it"
+msgstr ""
+
+#: media/js/settings.js:18
+msgid "Cancel"
+msgstr ""
+
+#: media/js/status.js:62
+msgid "No UUID"
+msgstr "Brak UUID"
+
+#: media/js/status.js:99 media/js/status.js.py:118 media/js/status.js:132
+#: media/js/status.js.py:137 media/js/status.js:154
+msgid "down"
+msgstr "zatrzymany"
+
+#: media/js/status.js:103 media/js/status.js.py:108 media/js/status.js:140
+#: media/js/status.js.py:145
+msgid "running"
+msgstr "działa"

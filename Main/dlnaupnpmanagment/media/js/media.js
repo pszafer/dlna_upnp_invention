@@ -1,3 +1,4 @@
+gettext('Delete');
 function cancel_item(id){
 	$("#"+id).remove();
 }
@@ -61,12 +62,12 @@ function add_content_row(){
 		td = jQuery('<td />', {}).appendTo(tr);
 		jQuery('<input />', {
 			type: "button",
-			value: "Save it",
+			value: gettext('Save it'),
 			onClick: "save_item(\'"+name+"\',\'"+trname+"\')"
 		}).appendTo(td);
 		jQuery('<input />', {
 			type: "button",
-			value: "Cancel",
+			value: gettext('Cancel'),
 			onClick: "cancel_item(\'"+name+"\')"
 		}).appendTo(td);
 		
@@ -101,7 +102,7 @@ function create_single_content_item(main_holder, id, name, type, value){
 	jQuery('<input />', {
 		id: id,
 		type: "button",
-		value: "Delete",
+		value: gettext('Delete'),
 		class: "delete",
 		onClick: "delete_item(this.id)"
 	}).appendTo(td);

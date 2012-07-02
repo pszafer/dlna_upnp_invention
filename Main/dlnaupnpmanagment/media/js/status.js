@@ -59,7 +59,7 @@ function getuuid(){
 			main_holder = $("#uuidtd");
 			jQuery('<div/>',{
 				class: "update even",
-				text: "No UUID"
+				text: gettext("No UUID")
 			}).appendTo(main_holder);
 		}
 	});
@@ -91,21 +91,21 @@ function get_server_status4statuspage(){
 		url: "serverstatus",
 		success: function(data) {
 			stat = data.Status;
-			if (stat == 'Failed' && current_state != 'down'){
+			if (stat == 'Failed' && current_state != gettext("down")){
 				$("#status").empty();
 				jQuery('<p/>', {
 					id: 'p_stat',
 					style: "color: red;",
-					text: 'down' 
+					text: gettext('down') 
 				}).appendTo("#status");
 				managing_server_status = false;
 			}
-			else if (stat == 'Running' && current_state != 'running'){
+			else if (stat == 'Running' && current_state != gettext('running')){
 				$("#status").empty();
 				jQuery('<p/>', {
 					id: 'p_stat',
 					style: "color: green;",
-					text: 'running' 
+					text: gettext('running') 
 				}).appendTo("#status");
 				managing_server_status = true;
 			}
@@ -115,7 +115,7 @@ function get_server_status4statuspage(){
 			jQuery('<p/>', {
 					id: 'p_stat',
 					style: "color: red;",
-					text: 'down' 
+					text: gettext('down') 
 				}).appendTo("#status");
 			managing_server_status = false;
 		}
@@ -129,20 +129,20 @@ function get_upnp_server_status(){
 		url: "upnpserverstatus",
 		success: function(data) {
 			stat = data.Status;
-			if (stat == 'Failed'  && current_state != 'down'){
+			if (stat == 'Failed'  && current_state != gettext('down')){
 				$("#status2").empty();
 				jQuery('<p/>', {
 					id: 'p_stat2',
 					style: "color: red;",
-					text: 'down' 
+					text: gettext('down') 
 				}).appendTo("#status2");
 			}
-			else if (stat == 'Running' && current_state != 'running'){
+			else if (stat == 'Running' && current_state != gettext('running')){
 				$("#status2").empty();
 				jQuery('<p/>', {
 					id: 'p_stat2',
 					style: "color: green;",
-					text: 'running' 
+					text: gettext('running')
 				}).appendTo("#status2");
 			}
 		},
@@ -151,7 +151,7 @@ function get_upnp_server_status(){
 			jQuery('<p/>', {
 				id: 'p_stat2',
 				style: "color: red;",
-				text: 'down' 
+				text: gettext('down') 
 			}).appendTo("#status2");
 		}
 	});

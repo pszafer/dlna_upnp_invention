@@ -79,6 +79,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 
@@ -101,9 +102,13 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'dlnaupnpmanagment.dlnaupnpmanage',
+ #   'dlnaupnpmanagment.settings_app',
+    'dlnaupnpmanagment',
     #'django.core.context_processors.media',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
 )
+
+LANGUAGES = ( ( 'en', "English", ), ( 'pl', "Polish", ), )

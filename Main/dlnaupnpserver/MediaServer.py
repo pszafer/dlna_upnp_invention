@@ -104,6 +104,7 @@ class MediaServer(log.Loggable):
                             'controlpoint' : 'yes',
                             'plugins' : {},
                             'transcoding' : transcoding,
+                            'interface' : 'wlan0'
                             }
         if port:
             coherence_config['serverport'] = port

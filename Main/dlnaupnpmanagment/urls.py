@@ -11,25 +11,32 @@ from django.views.generic.simple import redirect_to
 from django.views.generic import RedirectView
 admin.autodiscover()
 
+js_info_dict = {
+    'packages': ('dlnaupnpmanagment',),
+}
+
 urlpatterns = patterns('',
     # Example:
  #  url('', RedirectView.as_view(url='/dlnaupnpmanagment/status'), name='some_redirect'),
     url(r'^dlnaupnpmanagment/index', direct_to_template, {'template': 'dlnaupnpmanage/index.html'}),
     url(r'^dlnaupnpmanagment/$', redirect_to, {'url': '/dlnaupnpmanagment/status'}),
-    url(r'^dlnaupnpmanagment/status', 'dlnaupnpmanagment.dlnaupnpmanage.views.index'),
-    url(r'^dlnaupnpmanagment/media', 'dlnaupnpmanagment.dlnaupnpmanage.views.media'),
-    url(r'^dlnaupnpmanagment/serverstatus', 'dlnaupnpmanagment.dlnaupnpmanage.views.serverstatus'),
-    url(r'^dlnaupnpmanagment/upnpserverstatus', 'dlnaupnpmanagment.dlnaupnpmanage.views.upnpserverstatus'),
-    url(r'^dlnaupnpmanagment/settings', 'dlnaupnpmanagment.dlnaupnpmanage.views.settings'),
-    url(r'^dlnaupnpmanagment/setname', 'dlnaupnpmanagment.dlnaupnpmanage.views.setname'),
-    url(r'^dlnaupnpmanagment/update', 'dlnaupnpmanagment.dlnaupnpmanage.views.update'),
-    url(r'^dlnaupnpmanagment/runserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.runserver'),
-    url(r'^dlnaupnpmanagment/stopserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.stopserver'),
-    url(r'^dlnaupnpmanagment/checkAddress', 'dlnaupnpmanagment.dlnaupnpmanage.views.checkAddress'),
-    url(r'^dlnaupnpmanagment/getuuid', 'dlnaupnpmanagment.dlnaupnpmanage.views.getuuid'),
-    url(r'^dlnaupnpmanagment/addContent', 'dlnaupnpmanagment.dlnaupnpmanage.views.addContent'),
-    url(r'^dlnaupnpmanagment/saveSettings', 'dlnaupnpmanagment.dlnaupnpmanage.views.saveSettings'),
-    url(r'^dlnaupnpmanagment/logs', 'dlnaupnpmanagment.dlnaupnpmanage.views.logs'),
+    url(r'^dlnaupnpmanagment/status', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.index'),
+    url(r'^dlnaupnpmanagment/media', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_media.media'),
+    url(r'^dlnaupnpmanagment/serverstatus', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.serverstatus'),
+    url(r'^dlnaupnpmanagment/upnpserverstatus', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.upnpserverstatus'),
+    url(r'^dlnaupnpmanagment/settings', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_settings.settings'),
+    url(r'^dlnaupnpmanagment/setname', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_settings.setname'),
+    url(r'^dlnaupnpmanagment/update', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.update'),
+    url(r'^dlnaupnpmanagment/runserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.runserver'),
+    url(r'^dlnaupnpmanagment/stopserver', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.stopserver'),
+    url(r'^dlnaupnpmanagment/checkAddress', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.checkAddress'),
+    url(r'^dlnaupnpmanagment/getuuid', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_status.getuuid'),
+    url(r'^dlnaupnpmanagment/addContent', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_media.addContent'),
+    url(r'^dlnaupnpmanagment/saveSettings', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_settings.saveSettings'),
+    url(r'^dlnaupnpmanagment/logs', 'dlnaupnpmanagment.dlnaupnpmanage.views.views_logs.logs'),
+    (r'^jsi18n/(?P<packages>\S+?)/$', 'django.views.i18n.javascript_catalog'),
+    (r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict),
+    (r'^i18n/', include('django.conf.urls.i18n')),
     (r'^databrowse/(.*)', databrowse.site.root),
     # Uncomment the admin/doc line below to enable admin documentation:
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

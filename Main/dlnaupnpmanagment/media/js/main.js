@@ -1,10 +1,10 @@
 function createmenu(){
 	var menu = [
-	['Status',				'status'],
-	['Settings',			'settings'],
-	['Media',				'media'],
-	['Log',					'logs'],
-	['Help',				'help'],
+	[gettext('Status'),				'status'],
+	[gettext('Settings'),			'settings'],
+	[gettext('Media'),				'media'],
+	[gettext('Log'),				'logs'],
+	[gettext('Help'),				'help'],
 	];
 	var content = [];
 	for (i = 0; i< menu.length; ++i){

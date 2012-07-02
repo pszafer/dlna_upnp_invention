@@ -1,3 +1,4 @@
+{% load i18n %}
 <html>
 	<head>
 		<title>SETTINGS</title>
@@ -28,6 +29,7 @@
 		</style>
 		
 		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/settings.js"></script>
@@ -71,7 +73,7 @@
 						<table id="htable" cellspacing="0">
 							<tr>
 								<td id="text">
-									<div class="title">DLNA UPNP SERVER</div>
+									<div class="title">{% trans "DLNA UPNP SERVER" %}</div>
 									<div class="version">VERSION TO GET</div>
 								</td>
 								<td class="logo">

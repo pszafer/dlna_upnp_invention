@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-07-02 22:13+0200\n"
+"PO-Revision-Date: 2012-07-02 14:19+0100\n"
+"Last-Translator: Pawel Szafer <pszafer@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: media/js/main.js:3
+msgid "Status"
+msgstr "Status"
+
+#: media/js/main.js:4
+msgid "Settings"
+msgstr "Settings"
+
+#: media/js/main.js:5
+msgid "Media"
+msgstr "Media"
+
+#: media/js/main.js:6
+msgid "Log"
+msgstr "Log"
+
+#: media/js/main.js:7
+msgid "Help"
+msgstr "Help2"
+
+#: media/js/status.js:62
+msgid "No UUID"
+msgstr ""
+
+#: media/js/status.js:99 media/js/status.js.py:118 media/js/status.js:132
+#: media/js/status.js.py:137 media/js/status.js:154
+msgid "down"
+msgstr ""
+
+#: media/js/status.js:103 media/js/status.js.py:140 media/js/status.js:145
+msgid "running"
+msgstr ""

@@ -498,7 +498,7 @@ class RootDeviceXML(static.Data):
         root.attrib['xmlns']='urn:schemas-upnp-org:device-1-0'
         root.attrib['xmlns:dlna']='urn:schemas-dlna-org:device-1-0'
         root.attrib['xmlns:av']='urn:schemas-sony-com:av'
-        device_type = 'urn:schemas-upnp-org:device:%s:%d' % (device_type, int(version))
+        device_type = 'urn:schemas-upnp-org:device:%s:%d' % (device_type, 1)#old version - int(version)
         e = ET.SubElement(root, 'specVersion')
         ET.SubElement(e, 'major').text = '1'
         ET.SubElement(e, 'minor').text = '0'
@@ -577,9 +577,11 @@ class RootDeviceXML(static.Data):
                     namespace = 'schemas-upnp-org'
                 if( hasattr(service,'version') and
                     service.version < version):
-                    v = service.version
+                    #v = service.version
+                    v = 1
                 else:
-                    v = version
+                    #v = version
+                    v = 1
                 ET.SubElement(s, 'serviceType').text = 'urn:%s:service:%s:%d' % (namespace, id, int(v))
                 try:
                     namespace = service.id_namespace
@@ -606,7 +608,11 @@ class RootDeviceXML(static.Data):
             ET.SubElement(d, 'av:photoRoot').text = feature_list['imageItem']
         #if self.has_level(LOG_DEBUG):
         #    indent( root)
-        self.xml = """<?xml version="1.0" encoding="utf-8"?>\r\n""" + ET.tostring( root, encoding='utf-8')
+        self.xml = """<?xml version="1.0" encoding="utf-8"?>\n""" + ET.tostring( root, encoding='utf-8')
+#        self.xml = """<?xml version="1.0"?>
+#<root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><friendlyName>xps: root</friendlyName><manufacturer>Justin Maggard</manufacturer><manufacturerURL>http://www.debian.org/</manufacturerURL><modelDescription>MiniDLNA on Debian</modelDescription><modelName>Windows Media Connect compatible (MiniDLNA)</modelName><modelNumber>1</modelNumber><modelURL>http://www.debian.org/</modelURL><serialNumber>12345678</serialNumber><UDN>uuid:4d696e69-444c-164e-9d41-14feb59c1394</UDN><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC><presentationURL>http://192.168.3.130:8200/</presentationURL><iconList><icon><mimetype>image/png</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.png</url></icon><icon><mimetype>image/png</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.png</url></icon><icon><mimetype>image/jpeg</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.jpg</url></icon><icon><mimetype>image/jpeg</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.jpg</url></icon></iconList><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId><controlURL>/ctl/ContentDir</controlURL><eventSubURL>/evt/ContentDir</eventSubURL><SCPDURL>/ContentDir.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId><controlURL>/ctl/ConnectionMgr</controlURL><eventSubURL>/evt/ConnectionMgr</eventSubURL><SCPDURL>/ConnectionMgr.xml</SCPDURL></service><service><serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType><serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId><controlURL>/ctl/X_MS_MediaReceiverRegistrar</controlURL><eventSubURL>/evt/X_MS_MediaReceiverRegistrar</eventSubURL><SCPDURL>/X_MS_MediaReceiverRegistrar.xml</SCPDURL></service></serviceList></device></root>"""
+        #self.xml = """<?xml version="1.0" encoding="utf-8"?>
+#<root xmlns="urn:schemas-upnp-org:device-1-0" xmlns:av="urn:schemas-sony-com:av" xmlns:dlna="urn:schemas-dlna-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC><friendlyName>Nazwa serwera</friendlyName><manufacturer>Based on Coherence Framework</manufacturer><manufacturerURL>google.com</manufacturerURL><modelDescription>DLNA UPnP AV MediaServer</modelDescription><modelName>DLNA UPnP AV MediaServer</modelName><modelNumber>0.8</modelNumber><modelURL>google.com</modelURL><serialNumber>0000001</serialNumber><UDN>1fcc7d51-abb6-45c8-bac5-bd326a314b5a</UDN><iconList><icon><mimetype>image/png</mimetype><url>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a/logo2.png</url><depth>24</depth><height>48</height><width>48</width></icon><icon><mimetype>image/png</mimetype><url>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a/logo2.png</url><depth>24</depth><height>120</height><width>120</width></icon></iconList><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId><controlURL>/ContentDirectory/control</controlURL><eventSubURL>/ContentDirectory/subscribe</eventSubURL><SCPDURL>/ContentDirectory/scpd.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId><controlURL>/ConnectionManager/control</controlURL><eventSubURL>/ConnectionManager/subscribe</eventSubURL><SCPDURL>/ConnectionManager/scpd.xml</SCPDURL></service><service><serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType><serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId><controlURL>/X_MS_MediaReceiverRegistrar/control</controlURL><eventSubURL>/X_MS_MediaReceiverRegistrar/subscribe</eventSubURL><SCPDURL>/X_MS_MediaReceiverRegistrar/scpd.xml</SCPDURL></service></serviceList><presentationURL>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a</presentationURL><av:standardCDS>5.0</av:standardCDS><av:videoRoot>4</av:videoRoot><av:musicRoot>3</av:musicRoot><av:photoRoot>2</av:photoRoot></device></root>"""
         static.Data.__init__(self, self.xml, 'text/xml; charset=\"utf-8\"')
 
 class MediaServer(log.Loggable,BasicDeviceMixin):

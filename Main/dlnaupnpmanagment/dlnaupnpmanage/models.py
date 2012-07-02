@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib import admin
 
 class Content(models.Model):
     path = models.CharField(max_length = 400)
@@ -22,9 +21,15 @@ class DBAddress(models.Model):
 class ServiceStatus(models.Model):
     name = models.CharField(max_length=20)
     working = models.BooleanField(default=False)
-    
+
+class Language(models.Model):
+    language = models.CharField(max_length=3)
+
 ServiceStatus.objects.all().delete()
 ServiceStatus(name="manage").save()
 ServiceStatus(name="upnp").save()
 DBAddress.objects.all().delete()
 DBAddress(ip_address='', port=0).save()
+
+if (Language and Language.objects.all().count() == 0):
+    Language(language="en").save()

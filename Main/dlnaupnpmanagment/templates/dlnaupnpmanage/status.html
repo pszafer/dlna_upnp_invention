@@ -1,6 +1,8 @@
+{% load i18n %}
+{% get_language_info for LANGUAGE_CODE as lang %}
 <html>
 	<head>
-		<title>STATUS</title>
+		<title>{% trans "STATUS" %}</title>
 		<style type="text/css">
 			h1 {
 				background: #C0C0C0;
@@ -26,7 +28,8 @@
 			}
 		</style>
 		
-		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />	
+		<script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/status.js"></script>
@@ -36,6 +39,11 @@
 				getuuid()
 				setInterval("get_all_status()", 20000);
 			})
+			alert(gettext('Help'));
+			
+			function test(){
+				alert('aaa');
+			}
 		</script>
 	</head>
 	<body>
@@ -46,7 +54,7 @@
 						<table id="htable" cellspacing="0">
 							<tr>
 								<td id="text">
-									<div class="title">DLNA UPNP SERVER</div>
+									<div class="title">{% trans "DLNA UPNP SERVER" %}</div>
 									<div class="version">VERSION TO GET</div>
 								</td>
 								<td class="logo">
@@ -63,8 +71,8 @@
  						<script type="text/javascript">createmenu()</script>
 					</td>
 					<td id="content">
-						<p>Autorefreshing is enabled</p>
-						<p>Refresh interval: 20 seconds</p>
+						<p>{% trans "Autorefreshing is enabled" %}</p>
+						<p>{% trans "Refresh interval: 20 seconds" %}</p>
 						<table id="service-table">
 							<tr>
 								<td id="service-td"><input type='button' class='controls' onclick='server_start()' value='Start' id='b_connect' style='display:'></td>
@@ -72,16 +80,16 @@
 							</tr>
 							<tr>
 								<td id="service-td"><input type='button' class='controls' onclick='restart_server()' value='Restart' id='b_connect' style='display:'></td>
-								<td id="service-td"><input type='button' class='controls' onclick='reload_config()' value='Reload configuration' id='b_connect' style='display:'></td>
+								<td id="service-td"><input type='button' class='controls' onclick='reload_config()' value='{% trans "Reload configuration" %}' id='b_connect' style='display:'></td>
 							</tr>
 						</table>
 						<table id="status-table">
 							<tr id="header">
-								<td colspan="2">Server status</td>
+								<td colspan="2">{% trans "Server status" %}</td>
 							</tr>
 							<tr>
 								<td>
-									<div id="statusheader">Managing service is:</div>
+									<div id="statusheader">{% trans "Managing service is:" %}</div>
 								</td>
 								<td>
 									<div id="status"></div>
@@ -89,7 +97,7 @@
 							</tr>
 							<tr>
 								<td>
-									<div id="status2header-td">UPNP Service is:</div>
+									<div id="status2header-td">{% trans "UPNP Service is:" %}</div>
 								</td>
 								<td>
 									<div id="status2"></div>
@@ -106,7 +114,7 @@
 							</tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr id="header">
-								<td colspan="2">Shared media content:</td>
+								<td colspan="2">{% trans "Shared media content:" %}</td>
 							</tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr>
@@ -135,5 +143,22 @@
 				</tr>
 			</table>
 		</form>
+Language code: {{ lang.code }}<br />
+Name of language: {{ lang.name_local }}<br />
+Name in English: {{ lang.name }}<br />
+Bi-directional: {{ lang.bidi }}<br />
+
+
+<form onsubmit="test()">
+{% csrf_token %}
+<input name="next" type="hidden" value="{{ redirect_to }}" />
+<select name="language">
+{% get_language_info_list for LANGUAGES as languages %}
+{% for language in languages %}
+<option value="{{ language.code }}">{{ language.name_local }} ({{ language.code }})</option>
+{% endfor %}
+</select>
+<input type="submit" value="Go" />
+</form>
 	</body>
 </html>

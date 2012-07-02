@@ -5,15 +5,17 @@ function create_settings(server_name, ip_address, port, do_mimetype_container, t
 		ip_address = '';
 	}
 	fields = [
-  		{ title: 'Name', name: 'f_name', type: 'text', value: server_name, old_value:  server_name},
-		{ title: 'IP Address', name: 'f_ip', type: 'text', maxlen: 256,  value: ip_address, old_value: ip_address },
-		{ title: 'Port', name: 'f_port', type: 'text', maxlen: 256, value: port, old_value: port},
-		{ title: 'Ignore patterns', name: 'f_ignore', type: 'text', maxlen: 256, value: '', old_value: '' },
-		{ title: 'Do mimetype containers', name: 'f_mimetypecontainers', type: 'checkbox', value: do_mimetype_container, old_value: (do_mimetype_container=='yes') ? "true" : "false" },
-		{ title: 'Transcoding', name: 'f_transcoding', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"   },
-		{ title: 'Icon', name: 'f_icon', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"  },
-		{ title: 'Max child items', name: 'f_maxchild', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"   }
+  		{ title: gettext('Name'), name: 'f_name', type: 'text', value: server_name, old_value:  server_name},
+		{ title: gettext('IP Address'), name: 'f_ip', type: 'text', maxlen: 256,  value: ip_address, old_value: ip_address },
+		{ title: gettext('Port'), name: 'f_port', type: 'text', maxlen: 256, value: port, old_value: port},
+		{ title: gettext('Ignore patterns'), name: 'f_ignore', type: 'text', maxlen: 256, value: '', old_value: '' },
+		{ title: gettext('Do mimetype containers'), name: 'f_mimetypecontainers', type: 'checkbox', value: do_mimetype_container, old_value: (do_mimetype_container=='yes') ? "true" : "false" },
+		{ title: gettext('Transcoding'), name: 'f_transcoding', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"   },
+		{ title: gettext('Icon'), name: 'f_icon', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"  },
+		{ title: gettext('Max child items'), name: 'f_maxchild', type: 'checkbox', value: transcoding, old_value: (transcoding=='yes') ? "true" : "false"   }
 		]
+	savetext = gettext('Save it');
+	canceltext = gettext('Cancel');
 	main_holder = $("#savecancel-table");
 	main_holder.empty();
 	for (i=0; i<fields.length; ++i){
@@ -56,11 +58,12 @@ function create_settings(server_name, ip_address, port, do_mimetype_container, t
 		class: "tdbuttons",
 		colspan: "2"
 	}).appendTo(tr);
+	
 	jQuery('<input />', {
 					id: 'save_button',
 					type: 'button',
-					value: 'Save',
-					onclick: 'save_settings()'
+					onclick: 'save_settings()',
+					value: savetext 
 				}).appendTo(td);
 	tr = jQuery('<tr />', { }).appendTo(main_holder);
 	td = jQuery('<td />', { 
@@ -70,7 +73,7 @@ function create_settings(server_name, ip_address, port, do_mimetype_container, t
 	jQuery('<input />', {
 					id: 'cancel_button',
 					type: 'button',
-					value: 'Cancel',
+					value: canceltext,
 					onclick: 'javascript:reloadPage();'
 				}).appendTo(td);
 }
