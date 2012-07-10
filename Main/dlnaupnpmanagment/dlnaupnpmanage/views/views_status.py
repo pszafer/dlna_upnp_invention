@@ -217,9 +217,12 @@ def execute_on_daemon(order):
     import os
     new_dir, _ = os.path.split(os.path.normpath(os.path.dirname(__file__)))
     new_dir, _ = os.path.split(new_dir)
+    new_dir, _ = os.path.split(new_dir)
     new_dir = os.path.join(new_dir, "dlnaupnpserver/MediaDaemon.py")
     command = "echo '/usr/bin/python "+new_dir+" " + order +  "' | at now"
-    os.system(command)
+    print command
+    t = os.system(command)
+    print t
     #subprocess.Popen(["python", new_dir, order])
 
 def checkAddress(request):
@@ -248,3 +251,20 @@ def checkAddress(request):
         httpResponse['Content-Type'] = "text"
         httpResponse.write("Error")
         return httpResponse
+    
+    
+def getServerName(request):
+    if request.is_ajax():
+        try:
+            entries = DBContainer.objects.all()[:1].values().get()
+            response = HttpResponse()
+            response['Content-Type'] = "application/json"
+            name = entries['name']
+            if (name is None or name is ''):
+                response.write("{\"Name\":\"DLNA UPnP AV Media Server\"}")
+                return resp
+            response.write("{\"Name\":\""+name+"\"}")
+            return response
+        except Exception, e:
+            response.write("{\"Name\":\"DLNA UPnP AV Media Server\"}")
+            return resp

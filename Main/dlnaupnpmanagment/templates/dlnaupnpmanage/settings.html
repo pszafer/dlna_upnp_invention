@@ -33,6 +33,7 @@
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/settings.js"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/status.js"></script>
 		<script type="text/javascript" language="javascript">
 			function download_settings(){
 				$.getJSON("settings", function(data){
@@ -60,52 +61,70 @@
 			}
 			
 			$(document).ready(function(){
-				create_settings('{{name}}', '{{ip_address}}', '{{port}}', '{{do_mimetype_container}}', '{{transcoding}}')
+				create_settings('{{name}}', '{{ip_address}}', '{{port}}', '{{do_mimetype_container}}', '{{transcoding}}', '{{max_path}}');
+				status = get_server_status(false);
+				if (status == true){
+					$("#savecancel-table :input").attr('disabled', false);
+					//$(".delete").removeAttr('disabled');
+					//$(".controls").removeAttr('disabled');
+				}
+				else {
+					$("savecancel-table :input").attr('disabled', true);
+					jQuery('<p />', {
+						text : gettext("servernotrunning"),
+						style: 'color: red; text-align:center;'
+					}).appendTo($("#content"));
+					//$(".delete").attr('disabled', '');
+					//$(".controls").attr('disabled', '');
+				}
+				moveform();
 			})
 			
 		</script>
 	</head>
 	<body>
-		<form>
-			<table id="maintable" cellspacing="0">
-				<tr id="maintablehead">
-					<td id="header" colspan="2">
-						<table id="htable" cellspacing="0">
-							<tr>
-								<td id="text">
-									<div class="title">{% trans "DLNA UPNP SERVER" %}</div>
-									<div class="version">VERSION TO GET</div>
-								</td>
-								<td class="logo">
-									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
-								</td>
-							</tr>
-						</table>
-						
-					</td>
-				</tr>
-				<tr id="contentbody">
-					<td id="menu">
-						<h1>MENU</h1>
- 						<script type="text/javascript">createmenu()</script>
-					</td>
-					<td id="content">
-						<p>Autorefreshing is enabled</p>
-						<div id="main-holder">
- 							<table id="savecancel-table">
-							</table>
- 							<p>{{ created }}</p>
- 							{% block results %}
-		                        {% for el in fields %}
-		                           <li>{{el.uuid}}</li>
-		                           <p>test</p>
-		                        {% endfor %}
-		                	{% endblock %}    
- 							<p>{{ results }}</p>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</form>
+		<table id="maintable" cellspacing="0">
+			<tr id="maintablehead">
+				<td id="header" colspan="2">
+					<table id="htable" cellspacing="0">
+						<tr>
+							<td id="text">
+								<div class="version">{% trans "DLNA UPnP A/V Media Server" %}</div>
+								<div class="title">{% trans "Managing webpage" %}</div>
+							</td>
+							<td class="logo">
+								<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+							</td>
+						</tr>
+					</table>
+					
+				</td>
+			</tr>
+			<tr id="contentbody">
+				<td id="menu">
+					<h1>MENU</h1>
+						<script type="text/javascript">createmenu()</script>
+						<form id="language-form" onsubmit="test()">
+						{% csrf_token %}
+						<input name="next" type="hidden" value="{{ redirect_to }}" />
+						<select name="language">
+						{% get_language_info_list for LANGUAGES as languages %}
+						{% for language in languages %}
+							<option value="{{ language.code }}">{{ language.name_local }}</option>
+						{% endfor %}
+						</select>
+						<input type="submit" value={% trans "Go" %} />
+					</form>
+				</td>
+				<td id="content">
+					<div id="pagetitle">{% trans "Settings" %}</div>
+					<p>{% trans "Autorefreshing is enabled" %}</p>
+					<p>{% trans "Refresh interval: 20 seconds" %}</p>
+					<div id="main-holder">
+						<table id="savecancel-table"></table>
+					</div>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>

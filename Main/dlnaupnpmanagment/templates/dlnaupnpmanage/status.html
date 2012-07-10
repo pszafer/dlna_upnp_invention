@@ -35,11 +35,13 @@
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/status.js"></script>
 		<script type="text/javascript" language="javascript">
 			$(document).ready(function(){
+				moveform();
 				get_all_status();
-				getuuid()
+				getuuid();
+				getServerName();
 				setInterval("get_all_status()", 20000);
 			})
-			alert(gettext('Help'));
+			//alert(gettext('Help'));
 			
 			function test(){
 				alert('aaa');
@@ -47,118 +49,123 @@
 		</script>
 	</head>
 	<body>
-		<form>
-			<table id="maintable" cellspacing="0">
-				<tr id="maintablehead">
-					<td id="header" colspan="2">
-						<table id="htable" cellspacing="0">
-							<tr>
-								<td id="text">
-									<div class="title">{% trans "DLNA UPNP SERVER" %}</div>
-									<div class="version">VERSION TO GET</div>
-								</td>
-								<td class="logo">
-									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
-								</td>
-							</tr>
-						</table>
-						
-					</td>
-				</tr>
-				<tr id="contentbody">
-					<td id="menu">
-						<h1>MENU</h1>
- 						<script type="text/javascript">createmenu()</script>
-					</td>
-					<td id="content">
-						<p>{% trans "Autorefreshing is enabled" %}</p>
-						<p>{% trans "Refresh interval: 20 seconds" %}</p>
-						<table id="service-table">
-							<tr>
-								<td id="service-td"><input type='button' class='controls' onclick='server_start()' value='Start' id='b_connect' style='display:'></td>
-								<td id="service-td"><input type='button' class='controls' onclick='stop_server()' value='Stop' id='b_connect' style='display:'></td>
-							</tr>
-							<tr>
-								<td id="service-td"><input type='button' class='controls' onclick='restart_server()' value='Restart' id='b_connect' style='display:'></td>
-								<td id="service-td"><input type='button' class='controls' onclick='reload_config()' value='{% trans "Reload configuration" %}' id='b_connect' style='display:'></td>
-							</tr>
-						</table>
-						<table id="status-table">
-							<tr id="header">
-								<td colspan="2">{% trans "Server status" %}</td>
-							</tr>
-							<tr>
-								<td>
-									<div id="statusheader">{% trans "Managing service is:" %}</div>
-								</td>
-								<td>
-									<div id="status"></div>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<div id="status2header-td">{% trans "UPNP Service is:" %}</div>
-								</td>
-								<td>
-									<div id="status2"></div>
-								</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr id="header">
-								<td colspan="2">UUID:</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr>
-								<td id="uuidtd" colspan="2">
-								</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr id="header">
-								<td colspan="2">{% trans "Shared media content:" %}</td>
-							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr>
-								<td colspan="2">
-									<div id="main-holder">
-										{% if object_list %}
-											<div id="update-holder">
-												{% for object in object_list %}
-												<div class="update {% cycle even, odd %}" id="{{ object.id }}">
-													<div class="text">
-														{{ object.path|linebreaksbr }}
-													</div>
-													<div class="clear"></div>
+		<table id="maintable" cellspacing="0">
+			<tr id="maintablehead">
+				<td id="header" colspan="2">
+					<table id="htable" cellspacing="0">
+						<tr>
+							<td id="text">
+								<div class="version">{% trans "DLNA UPnP A/V Media Server" %}</div>
+								<div class="title">{% trans "Managing webpage" %}</div>
+							</td>
+							<td class="logo">
+								<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+							</td>
+						</tr>
+					</table>
+					
+				</td>
+			</tr>
+			<tr id="contentbody">
+				<td id="menu">
+					<h1>MENU</h1>
+						<script type="text/javascript">createmenu()</script>
+						<form id="language-form" onsubmit="changelanguage()">
+							{% csrf_token %}
+							<select id="language" name="language">
+							{% get_language_info_list for LANGUAGES as languages %}
+							{% get_language_info for LANGUAGE_CODE as selectlanguage %}
+							{% for language in languages %}
+								{% if language.code == selectlanguage.code %}
+									<option value="{{ language.code }}" selected="selected">{{ language.name_local }}</option>
+								{% else %}
+									<option value="{{ language.code }}">{{ language.name_local }}</option>
+								{% endif %}
+							{% endfor %}
+							</select>
+							<input type="submit" value={% trans "Go" %} />
+						</form>
+				</td>
+				<td id="content">
+					<div id="pagetitle">{% trans "Status" %}</div>
+					<p>{% trans "Autorefreshing is enabled" %}</p>
+					<p>{% trans "Refresh interval: 20 seconds" %}</p>
+					<table id="service-table">
+						<tr>
+							<td id="service-td"><input type='button' class='controls' onclick='server_start()' value='Start' id='b_connect' style='display:'></td>
+							<td id="service-td"><input type='button' class='controls' onclick='stop_server()' value='Stop' id='b_connect' style='display:'></td>
+						</tr>
+						<tr>
+							<td id="service-td"><input type='button' class='controls' onclick='restart_server()' value='Restart' id='b_connect' style='display:'></td>
+							<td id="service-td"><input type='button' class='controls' onclick='reload_config()' value='{% trans "Reload configuration" %}' id='b_connect' style='display:'></td>
+						</tr>
+					</table>
+					<table id="status-table">
+						<tr id="header">
+							<td colspan="2">{% trans "Server name" %}</td>
+						</tr>
+						<tr>
+							<td>
+								<div id="servertitle"></div><br />
+							</td>
+						</tr>
+						<tr id="header">
+							<td colspan="2">{% trans "Server status" %}</td>
+						</tr>
+						<tr>
+							<td>
+								<div id="statusheader">{% trans "Managing service is:" %}</div>
+							</td>
+							<td>
+								<div id="status"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div id="status2header-td">{% trans "UPNP Service is:" %}</div>
+							</td>
+							<td>
+								<div id="status2"></div>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr id="header">
+							<td colspan="2">UUID:</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr>
+							<td id="uuidtd" colspan="2">
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr id="header">
+							<td colspan="2">{% trans "Shared media content:" %}</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr>
+							<td colspan="2">
+								<div id="main-holder">
+									{% if object_list %}
+										<div id="update-holder">
+											{% for object in object_list %}
+											<div class="update {% cycle "even" "odd" %}" id="{{ object.id }}">
+												<div class="text">
+													{{ object.path|linebreaksbr }}
 												</div>
-												{% endfor %}
+												<div class="clear"></div>
 											</div>
-										{% else %}
-											<p>No updates</p>
-										{% endif %}
-										<br />
-									</div>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
-		</form>
-Language code: {{ lang.code }}<br />
-Name of language: {{ lang.name_local }}<br />
-Name in English: {{ lang.name }}<br />
-Bi-directional: {{ lang.bidi }}<br />
-
-
-<form onsubmit="test()">
-{% csrf_token %}
-<input name="next" type="hidden" value="{{ redirect_to }}" />
-<select name="language">
-{% get_language_info_list for LANGUAGES as languages %}
-{% for language in languages %}
-<option value="{{ language.code }}">{{ language.name_local }} ({{ language.code }})</option>
-{% endfor %}
-</select>
-<input type="submit" value="Go" />
-</form>
+											{% endfor %}
+										</div>
+									{% else %}
+										<p>No updates</p>
+									{% endif %}
+									<br />
+								</div>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>

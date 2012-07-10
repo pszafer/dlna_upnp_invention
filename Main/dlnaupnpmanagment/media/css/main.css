@@ -20,6 +20,10 @@ form{
 	margin: 0;
 }
 
+#language-form{
+	vertical-align: bottom;
+	}
+
 #contentbody {
 	margin-bottom: 2px;
 }
@@ -91,7 +95,7 @@ form{
 }
 
 #htable .title {
-	font: 40px Lucida Casual;
+	font: 24px Lucida Casual;
 	color: #fff;
 	font-weight: bold;
 	font-style: italic;
@@ -112,6 +116,14 @@ form{
 	padding: 5px 4px 20px 4px;
 	vertical-align: top;
 	width: 770px;
+}
+
+#pagetitle{
+	font: 2em sans-serif;
+	color: gray;
+	text-align: center;
+	font-weight: bold;
+	border-style:solid;
 }
 
 #logcontent {
@@ -184,4 +196,8 @@ border-left: 1px solid #ccc;
 border-bottom: 1px solid #ccc;
 border-right: 1px solid #ccc;
 width: 100%;
+}
+
+select {
+	text-transform:uppercase;
 }

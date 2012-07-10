@@ -13,7 +13,7 @@ import urllib
 
 from twisted.internet import task
 from twisted.internet import defer
-from twisted.web import static
+from twisted.web import static, http
 from twisted.web import resource, server
 #from twisted.web import proxy
 from twisted.python import util
@@ -21,7 +21,7 @@ from twisted.python.filepath import FilePath
 
 from modCoherence.extern.et import ET, indent
 
-from modCoherence import __version__
+from modCoherence import __version__,SERVER_ID
 
 from modCoherence.upnp.core.service import ServiceServer
 from modCoherence.upnp.core import utils
@@ -38,6 +38,7 @@ from modCoherence.upnp.services.servers.media_receiver_registrar_server import F
 from modCoherence.upnp.devices.basics import BasicDeviceMixin
 
 from modCoherence import log
+from collections import OrderedDict
 
 COVER_REQUEST_INDICATOR = re.compile("(.*?cover\.[A-Z\a-z]{3,4}(&WMHME=1)?)$")
 
@@ -83,8 +84,12 @@ class MSRoot(resource.Resource, log.Loggable):
         except:
             pass
         try:
-            if headers['soapaction'] == "urn:schemas-upnp-org:service:ContentDirectory:1#X_GetFeatureList":
+            soapaction = headers['soapaction']
+            issearch = str("\"urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities\"")
+            if soapaction == "urn:schemas-upnp-org:service:ContentDirectory:1#X_GetFeatureList":
                 pass
+            if soapaction == issearch:
+                headers['soapaction'] = "urn:schemas-upnp-org:service:ContentDirectory:1#X_GetFeatureList"
         except:
             pass    
         if request.method == 'HEAD':
@@ -94,15 +99,30 @@ class MSRoot(resource.Resource, log.Loggable):
                 try:
                     location = ch.get_path()
                     caption = ch.get_caption()
-                    size = ch.caption_size
+                    size = ch.size
                     if caption == None:
                         raise KeyError
+                    request.headers._headers._rawHeaders = OrderedDict()
                     request.setResponseCode(200)
-                    request.setHeader('Content-Length', size)
-                    request.setHeader('Cache-Control', 'no-cache')
-                    request.setHeader('contentFeatures.dlna.org', "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000")
-                    request.setHeader('CaptionInfo.sec', caption)
-                    return static.Data('','video/x-msvideo')
+                    #request.setHeader('Content-Length', size)
+                    #request.removeHeader('Content-Length')
+#                    request.setHeader('test', 'test')
+                    #request.headers._headers._rawHeaders['Content-Type'] = ['video/x-msvideo']
+                    request.setHeader('Content-Type', 'video/x-msvideo')
+                    request.headers._headers._rawHeaders['Content-Length'] = [size]
+                    request.headers._headers._rawHeaders['transferMode.dlna.org'] = ['Streaming']
+#                    request.headers._headers._rawHeaders['contentFeatures.dlna.org'] = ['DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000']
+                    request.headers._headers._rawHeaders['CaptionInfo.sec'] = [caption] 
+                    #['http://192.168.3.117:8200/Captions/18.srt']
+                    request.headers._headers._rawHeaders['Accept-Ranges'] = ['bytes']
+                    request.headers._headers._rawHeaders['Connection'] = ['close']
+                    request.headers._headers._rawHeaders['Date'] = [http.datetimeToString()]
+                    request.headers._headers._rawHeaders['EXT'] = ['']
+                    request.headers._headers._rawHeaders['realTimeInfo.dlna.org'] = ['DLNA.ORG_TLAG=*']
+                    request.headers._headers._rawHeaders['contentFeatures.dlna.org'] = ['DLNA.ORG_OP=01;DLNA.ORG_CI=0']
+                    request.headers._headers._rawHeaders['SERVER'] = ["Debian/wheezy/sid DLNADOC/1.50 UPnP/1.0 MiniDLNA/1.0"]
+                    #[SERVER_ID + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00"]
+                    return  utils.Data('','video/x-msvideo', request)
                     #repair this shitttt!!!!!!!!!!
                 
                 except:
@@ -532,7 +552,7 @@ class RootDeviceXML(static.Data):
         ET.SubElement(d, 'modelNumber').text = __version__
         ET.SubElement(d, 'modelURL').text = 'google.com'
         ET.SubElement(d, 'serialNumber').text = "0000001"
-        ET.SubElement(d, 'UDN').text = uuid.strip("uuid:")
+        ET.SubElement(d, 'UDN').text = uuid
         #ET.SubElement(d, 'UPC').text = ''
 
         if len(icons):
@@ -588,12 +608,12 @@ class RootDeviceXML(static.Data):
                 except:
                     namespace = 'upnp-org'
                 ET.SubElement(s, 'serviceId').text = 'urn:%s:serviceId:%s' % (namespace,id)
-                #ET.SubElement(s, 'SCPDURL').text = '/' + uuid[5:] + '/' + id + '/' + service.scpd_url
-                #ET.SubElement(s, 'controlURL').text = '/' + uuid[5:] + '/' + id + '/' + service.control_url
-                #ET.SubElement(s, 'eventSubURL').text = '/' + uuid[5:] + '/' + id + '/' + service.subscription_url
-                ET.SubElement(s, 'controlURL').text = '/' + id + '/' + service.control_url
-                ET.SubElement(s, 'eventSubURL').text =  '/' +  id + '/' + service.subscription_url
-                ET.SubElement(s, 'SCPDURL').text =  '/' + id + '/' + service.scpd_url
+                ET.SubElement(s, 'controlURL').text = '/' + uuid[5:] + '/' + id + '/' + service.control_url
+                ET.SubElement(s, 'eventSubURL').text = '/' + uuid[5:] + '/' + id + '/' + service.subscription_url
+                ET.SubElement(s, 'SCPDURL').text = '/' + uuid[5:] + '/' + id + '/' + service.scpd_url
+               #ET.SubElement(s, 'controlURL').text = '/' + id + '/' + service.control_url
+               #ET.SubElement(s, 'eventSubURL').text =  '/' +  id + '/' + service.subscription_url
+               #ET.SubElement(s, 'SCPDURL').text =  '/' + id + '/' + service.scpd_url
 
         if len(devices):
             e = ET.SubElement(d, 'deviceList')
@@ -609,8 +629,9 @@ class RootDeviceXML(static.Data):
         #if self.has_level(LOG_DEBUG):
         #    indent( root)
         self.xml = """<?xml version="1.0" encoding="utf-8"?>\n""" + ET.tostring( root, encoding='utf-8')
+        self.xml = str(self.xml)
 #        self.xml = """<?xml version="1.0"?>
-#<root xmlns="urn:schemas-upnp-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><friendlyName>xps: root</friendlyName><manufacturer>Justin Maggard</manufacturer><manufacturerURL>http://www.debian.org/</manufacturerURL><modelDescription>MiniDLNA on Debian</modelDescription><modelName>Windows Media Connect compatible (MiniDLNA)</modelName><modelNumber>1</modelNumber><modelURL>http://www.debian.org/</modelURL><serialNumber>12345678</serialNumber><UDN>uuid:4d696e69-444c-164e-9d41-14feb59c1394</UDN><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC><presentationURL>http://192.168.3.130:8200/</presentationURL><iconList><icon><mimetype>image/png</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.png</url></icon><icon><mimetype>image/png</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.png</url></icon><icon><mimetype>image/jpeg</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.jpg</url></icon><icon><mimetype>image/jpeg</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.jpg</url></icon></iconList><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId><controlURL>/ctl/ContentDir</controlURL><eventSubURL>/evt/ContentDir</eventSubURL><SCPDURL>/ContentDir.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId><controlURL>/ctl/ConnectionMgr</controlURL><eventSubURL>/evt/ConnectionMgr</eventSubURL><SCPDURL>/ConnectionMgr.xml</SCPDURL></service><service><serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType><serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId><controlURL>/ctl/X_MS_MediaReceiverRegistrar</controlURL><eventSubURL>/evt/X_MS_MediaReceiverRegistrar</eventSubURL><SCPDURL>/X_MS_MediaReceiverRegistrar.xml</SCPDURL></service></serviceList></device></root>"""
+#<root xmlns="urn:schemas-upnp-org:device-1-0" xmlns:av="urn:schemas-sony-com:av" xmlns:dlna="urn:schemas-dlna-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC><friendlyName>Nazwa Serwera 123</friendlyName><manufacturer>Based on Coherence Framework</manufacturer><manufacturerURL>http://www.debian.org/</manufacturerURL><modelDescription>MiniDLNA on Debian</modelDescription><modelName>DLNA UPnP AV MediaServer</modelName><modelNumber>0.8</modelNumber><modelURL>google.com</modelURL><serialNumber>0000001</serialNumber><UDN>uuid:1fcc7d51-abb6-45c8-bac5-bd326a314b5a</UDN><presentationURL>http://192.168.3.130:8200/</presentationURL><iconList><icon><mimetype>image/png</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.png</url></icon><icon><mimetype>image/png</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.png</url></icon><icon><mimetype>image/jpeg</mimetype><width>48</width><height>48</height><depth>24</depth><url>/icons/sm.jpg</url></icon><icon><mimetype>image/jpeg</mimetype><width>120</width><height>120</height><depth>24</depth><url>/icons/lrg.jpg</url></icon></iconList><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId><controlURL>/ctl/ContentDir</controlURL><eventSubURL>/evt/ContentDir</eventSubURL><SCPDURL>/ContentDir.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId><controlURL>/ctl/ConnectionMgr</controlURL><eventSubURL>/evt/ConnectionMgr</eventSubURL><SCPDURL>/ConnectionMgr.xml</SCPDURL></service><service><serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType><serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId><controlURL>/ctl/X_MS_MediaReceiverRegistrar</controlURL><eventSubURL>/evt/X_MS_MediaReceiverRegistrar</eventSubURL><SCPDURL>/X_MS_MediaReceiverRegistrar.xml</SCPDURL></service></serviceList></device></root>"""
         #self.xml = """<?xml version="1.0" encoding="utf-8"?>
 #<root xmlns="urn:schemas-upnp-org:device-1-0" xmlns:av="urn:schemas-sony-com:av" xmlns:dlna="urn:schemas-dlna-org:device-1-0"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType><dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC><friendlyName>Nazwa serwera</friendlyName><manufacturer>Based on Coherence Framework</manufacturer><manufacturerURL>google.com</manufacturerURL><modelDescription>DLNA UPnP AV MediaServer</modelDescription><modelName>DLNA UPnP AV MediaServer</modelName><modelNumber>0.8</modelNumber><modelURL>google.com</modelURL><serialNumber>0000001</serialNumber><UDN>1fcc7d51-abb6-45c8-bac5-bd326a314b5a</UDN><iconList><icon><mimetype>image/png</mimetype><url>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a/logo2.png</url><depth>24</depth><height>48</height><width>48</width></icon><icon><mimetype>image/png</mimetype><url>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a/logo2.png</url><depth>24</depth><height>120</height><width>120</width></icon></iconList><serviceList><service><serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType><serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId><controlURL>/ContentDirectory/control</controlURL><eventSubURL>/ContentDirectory/subscribe</eventSubURL><SCPDURL>/ContentDirectory/scpd.xml</SCPDURL></service><service><serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType><serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId><controlURL>/ConnectionManager/control</controlURL><eventSubURL>/ConnectionManager/subscribe</eventSubURL><SCPDURL>/ConnectionManager/scpd.xml</SCPDURL></service><service><serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType><serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId><controlURL>/X_MS_MediaReceiverRegistrar/control</controlURL><eventSubURL>/X_MS_MediaReceiverRegistrar/subscribe</eventSubURL><SCPDURL>/X_MS_MediaReceiverRegistrar/scpd.xml</SCPDURL></service></serviceList><presentationURL>/1fcc7d51-abb6-45c8-bac5-bd326a314b5a</presentationURL><av:standardCDS>5.0</av:standardCDS><av:videoRoot>4</av:videoRoot><av:musicRoot>3</av:musicRoot><av:photoRoot>2</av:photoRoot></device></root>"""
         static.Data.__init__(self, self.xml, 'text/xml; charset=\"utf-8\"')
@@ -692,6 +713,7 @@ class MediaServer(log.Loggable,BasicDeviceMixin):
         version = int(self.version)
         while version > 0:
             self.web_resource.putChild( 'description-%d.xml' % version,
+            #self.web_resource.putChild( 'rootDescription.xml',
                                     RootDeviceXML( self.coherence.hostname,
                                     str(self.uuid),
                                     self.coherence.urlbase,

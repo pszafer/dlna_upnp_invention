@@ -853,6 +853,7 @@ def _namespaces(elem, encoding, default_namespace=None):
                     prefix = _namespace_map.get(uri)
                     if prefix is None:
                         prefix = "ns%d" % len(namespaces)
+                        prefix = "upnp"
                     if prefix != "xml":
                         namespaces[uri] = prefix
                 if prefix:

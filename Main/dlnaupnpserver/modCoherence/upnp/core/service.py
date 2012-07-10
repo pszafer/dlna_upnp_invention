@@ -806,7 +806,8 @@ class ServiceServer(log.Loggable):
                 #print arg_name, arg_direction, needs_callback
 
             """ check for action in backend """
-            callback = getattr(self.backend, "upnp_%s" % name, None)
+            method_name = "upnp_%s" % name
+            callback = getattr(self.backend, method_name, None)
 
             if callback == None:
                 """ check for action in ServiceServer """

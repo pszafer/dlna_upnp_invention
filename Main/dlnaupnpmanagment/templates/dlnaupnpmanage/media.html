@@ -41,6 +41,7 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
 		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/media.js"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/status.js"></script>
 		<script type="text/javascript" language="javascript">
 		
 			function test(){
@@ -60,14 +61,20 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 				test();
 				status = get_server_status(false);
 				if (status == true){
-					$(".delete").removeAttr('disabled');
-					$(".controls").removeAttr('disabled');
+					$("#status-table :input").attr('disabled', false);
+					//$(".delete").removeAttr('disabled');
+					//$(".controls").removeAttr('disabled');
 				}
 				else {
-					alert(status);
-					$(".delete").attr('disabled', '');
-					$(".controls").attr('disabled', '');
+					$("#status-table :input").attr('disabled', true);
+					jQuery('<p />', {
+						text : gettext("servernotrunning"),
+						style: 'color: red; text-align:center;'
+					}).appendTo($("#content"));
+					//$(".delete").attr('disabled', '');
+					//$(".controls").attr('disabled', '');
 				}
+				moveform();
 			})
 			
 			function adding(){
@@ -89,42 +96,52 @@ jezeli FALSE to usun wiersz, ale powiedz ze zly i pozwol edytowac
 	</head>
 <!-- 	{% debug %} -->
 	<body>
-		<form>
-			<table id="maintable" cellspacing="0">
-				<tr id="maintablehead">
-					<td id="header" colspan="2">
-						<table id="htable" cellspacing="0">
-							<tr>
-								<td id="text">
-									<div class="title">DLNA UPNP SERVER</div>
-<!-- 									<div class="version">VERSION TO GET</div> -->
-								</td>
-								<td class="logo">
-									<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
-								</td>
-							</tr>
-						</table>
-						
-					</td>
-				</tr>
-				<tr id="contentbody">
-					<td id="menu">
-						<h1>MENU</h1>
- 						<script type="text/javascript">createmenu()</script>
-					</td>
-					<td id="content">
-						<p>{% trans "Autorefreshing is enabled" %}</p>
-						<p>{% trans "Refresh interval: 20 seconds" %}</p>
-						<table id="media-table">
-							<tr>
-								<td id="service-td" colspan="2"><input type='button' class='controls' onclick='add_content_row()' value='{% trans "Add content row" %}' id='b_add' style='display:'></td>
-							</tr>
-						</table>
-						<table id="status-table">
-						</table>
-					</td>
-				</tr>
-			</table>
-		</form>
+		<table id="maintable" cellspacing="0">
+			<tr id="maintablehead">
+				<td id="header" colspan="2">
+					<table id="htable" cellspacing="0">
+						<tr>
+							<td id="text">
+								<div class="version">{% trans "DLNA UPnP A/V Media Server" %}</div>
+								<div class="title">{% trans "Managing webpage" %}</div>
+							</td>
+							<td class="logo">
+								<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+							</td>
+						</tr>
+					</table>
+					
+				</td>
+			</tr>
+			<tr id="contentbody">
+				<td id="menu">
+					<h1>MENU</h1>
+						<script type="text/javascript">createmenu()</script>
+						<form id="language-form" onsubmit="test()">
+						{% csrf_token %}
+						<input name="next" type="hidden" value="{{ redirect_to }}" />
+						<select name="language">
+						{% get_language_info_list for LANGUAGES as languages %}
+						{% for language in languages %}
+							<option value="{{ language.code }}">{{ language.name_local }}</option>
+						{% endfor %}
+						</select>
+						<input type="submit" value={% trans "Go" %} />
+					</form>
+				</td>
+				<td id="content">
+					<div id="pagetitle">{% trans "Media" %}</div>
+					<p>{% trans "Autorefreshing is enabled" %}</p>
+					<p>{% trans "Refresh interval: 20 seconds" %}</p>
+					<table id="media-table">
+						<tr>
+							<td id="service-td" colspan="2"><input type='button' class='controls' onclick='add_content_row()' value='{% trans "Add content row" %}' id='b_add' style='display:'></td>
+						</tr>
+					</table>
+					<table id="status-table">
+					</table>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>

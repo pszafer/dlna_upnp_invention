@@ -12,6 +12,7 @@ class DBContainer(models.Model):
     session_id = models.CharField(max_length=300)
     do_mimetype_container = models.CharField(max_length=200)
     transcoding = models.CharField(max_length=10)
+    max_path = models.IntegerField(default=0)
     enable_inotify = models.BooleanField(default=True)
     
 class DBAddress(models.Model):

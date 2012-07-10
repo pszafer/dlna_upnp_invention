@@ -105,6 +105,23 @@ class ContentDirectoryServer(service.ServiceServer, resource.Resource,
         item = self.backend
         return proceed(item)
 
+    def upnp_GetSearchCapabilities(self, *args, **kwagrs):
+        def build_response(tm):
+            r = {'SearchCaps' : tm,}
+            return r
+        def got_error(r):
+            return r
+        def process_result(found_item):
+            return build_response(found_item)
+        def proceed(result):
+            d = defer.maybeDeferred(result.upnp_GetSearchCapabilities)
+            d.addCallback(process_result)
+            d.addErrback(got_error)
+            return d
+        item = self.backend
+        return proceed(item)
+
+
     def upnp_Search(self, *args, **kwargs):
         ContainerID = kwargs['ContainerID']
         Filter = kwargs['Filter']
@@ -224,11 +241,15 @@ class ContentDirectoryServer(service.ServiceServer, resource.Resource,
                     return item
                 else:
                     return proceed(item)
-		#print "Content: %r" % kwargs
-		#if "microsoft" in Filter:
-		#item = None
-		#else:
-		item = self.backend.get_by_id(root_id)
+        item = self.backend.get_by_id(root_id)
+        mimecontainers = self.backend.get_x_containers()
+        if (len(mimecontainers)):
+                if "object.item.imageItem" in SearchCriteria:
+                    item = self.backend.get_by_id(mimecontainers['imageItem'])
+                elif "object.item.audioItem" in SearchCriteria:
+                    item = self.backend.get_by_id(mimecontainers['audioItem'])
+                elif "object.item.videoItem" in SearchCriteria:
+                    item = self.backend.get_by_id(mimecontainers['videoItem'])
         if item == None:
             return failure.Failure(errorCode(708))
 
@@ -237,6 +258,56 @@ class ContentDirectoryServer(service.ServiceServer, resource.Resource,
             return item
         else:
             return proceed(item)
+#
+#    def GetSearchCapabilities(self, *args, **kwagrs):
+#        from modCoherence.extern.et import ET
+#        
+#        def create_containers(containers={}):
+#            root = ET.Element('Features')
+#            root.attrib['xmlns']='urn:schemas-upnp-org:av:avs'
+#            root.attrib['xmlns:xsi']='http://www.w3.org/2001/XMLSchema-instance'
+#            root.attrib['xsi:schemaLocation']='urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd' 
+#            e = ET.SubElement(root, 'Feature')
+#            e.attrib['name'] = "samsung.com_BASICVIEW"
+#            e.attrib['version'] = str(1)
+#            
+#            if (len(containers)):
+#                for key, container in containers.items():
+#                    i = ET.SubElement(e, 'container')
+#                    id = str(container)
+#                    i.attrib['id'] = id 
+#                    if key == "imageItem":
+#                        i.attrib['type'] = "object.item.imageItem"
+#                    elif key == "audioItem":
+#                        i.attrib['type'] = "object.item.audioItem"
+#                    elif key == "videoItem":
+#                        i.attrib['type'] = "object.item.videoItem"
+#            xml = """<?xml version="1.0" encoding="utf-8"?>""" + ET.tostring( root, encoding='utf-8')
+#            return xml
+#            
+#        def get_containers_x_children(feature_list):
+#            root = ET.Element('u:X_GetFeatureListResponse')
+#            root.attrib['xmlns:u']='urn:schemas-upnp-org:service:ContentDirectory:1'
+#            e = ET.SubElement(root, 'FeatureList')
+#            e.text = create_containers(feature_list)
+#            r = """<?xml version="1.0" encoding="utf-8"?>""" + ET.tostring( root, encoding='utf-8')
+#            return r
+#        
+#        def build_response(tm):
+#            r = {'FeatureList' : create_containers(tm),}
+#            return r
+#        def got_error(r):
+#            return r
+#        def process_result(found_item):
+#            return build_response(found_item)
+#        def proceed(result):
+#            d = defer.maybeDeferred(result.get_x_containers)
+#            d.addCallback(process_result)
+#            d.addErrback(got_error)
+#            return d
+#        item = self.backend
+#        return proceed(item)
+
 
     def upnp_Browse(self, *args, **kwargs):
         try:

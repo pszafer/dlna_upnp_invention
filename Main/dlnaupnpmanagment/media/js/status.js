@@ -2,22 +2,20 @@ function server_start(){
 	$.ajax({
 		url: "runserver",
 		success: function(data) {
-			alert("test");
 			setTimeout(function(){
 			$.ajax({
 				url: "checkAddress",
 				success: function(data) {
-					alert("ok");
 				},
 				error: function(x,y,z) {
-					alert("error2");
+					//alert("error2");
 				}
 			});
 			get_all_status();
 			}, 100);					
 		},
 		error: function(x,y,z) {
-			alert("error");
+			//alert("error");
 		}
 	});
 }
@@ -30,17 +28,17 @@ function stop_server(){
 			$.ajax({
 				url: "checkAddress",
 				success: function(data) {
-					alert("ok");
+					//alert("ok");
 				},
 				error: function(x,y,z) {
-					alert("error");
+					//alert("error");
 				}
 			});
 			get_all_status();
 			}, 1000);					
 		},
 		error: function(x,y,z) {
-			alert("error");
+			//alert("error");
 		}
 	});
 }

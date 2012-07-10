@@ -1,0 +1,94 @@
+{% load i18n %}
+<html>
+	<head>
+		<title>{% trans "SETTINGS" %}</title>
+		<style type="text/css">
+			h1 {
+				background: #C0C0C0;
+				padding: 20px;
+			}
+			div.update {
+				width: 90%;
+				padding: 5px;
+			}
+			div.even {
+				background: #ddd;
+			}
+			div.timestamp {
+				float: left;
+				font-weight: bold;
+			}
+			div.text {
+				float: left;
+				padding-left: 10px;
+			}
+			div.clear {
+				clear: both;
+				height: 1px;
+			}
+		</style>
+		
+		<link rel='stylesheet' type='text/css' href='{{ MEDIA_URL }}css/main.css' />
+		<script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/jquery-1.6.2.js"></script>
+		<script type="text/javascript" language="javascript" src="{{ MEDIA_URL }}js/main.js"></script>
+		<script src="{{ MEDIA_URL }}js/jquery.logviewer.js""></script>
+		<script type="text/javascript">
+		
+		jQuery(document).bind("ready", function() {
+		     moveform();
+		});
+		</script>
+	</head>
+	<body>
+		<table id="maintable" cellspacing="0">
+			<tr id="maintablehead">
+				<td id="header" colspan="2">
+					<table id="htable" cellspacing="0">
+						<tr>
+							<td id="text">
+								<div class="version">{% trans "DLNA UPnP A/V Media Server" %}</div>
+								<div class="title">{% trans "Managing webpage" %}</div>
+							</td>
+							<td class="logo">
+								<div><img src="{{ MEDIA_URL }}images/logo_big.png"></img></div>
+							</td>
+						</tr>
+					</table>
+					
+				</td>
+			</tr>
+			<tr id="contentbody">
+				<td id="menu">
+					<h1>MENU</h1>
+						<script type="text/javascript">createmenu()</script>
+						<form id="language-form" onsubmit="test()">
+						{% csrf_token %}
+						<input name="next" type="hidden" value="{{ redirect_to }}" />
+						<select name="language">
+						{% get_language_info_list for LANGUAGES as languages %}
+						{% for language in languages %}
+							<option value="{{ language.code }}">{{ language.name_local }}</option>
+						{% endfor %}
+						</select>
+						<input type="submit" value={% trans "Go" %} />
+					</form>
+				</td>
+				<td id="content">
+					<div id="pagetitle">{% trans "Help" %}</div>
+					<p>{% trans "Easy way to get started with UPnP AV Media Server" %}</p>
+					<ol>
+						<li>{% trans "Start server" %}</li>
+							<p>{% trans "help_section startserver" %}</p>
+						<li>{% trans "Restart server" %}</li>
+							<p>{% trans "help_section restartserver" %}</p>
+						<li>{% trans "Add media content" %}</li>
+							<p>{% trans "help_section addmediacontent" %}</p>
+						<li>{% trans "Change settings" %}</li>
+							<p>{% trans "help_section settings" %}</p>
+					</ol>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

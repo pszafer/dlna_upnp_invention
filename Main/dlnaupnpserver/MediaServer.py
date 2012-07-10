@@ -89,6 +89,7 @@ class MediaServer(log.Loggable):
         md = self.backendObject.get_content()
         self.server = self.create_MediaServer(self.coherence, md, content, settings)
         self.backendObject.close_connection_to_db()
+        self.info(self.backendObject.dbCursor.db_path)
         self.lock.release()
     def get_coherence(self, ip_addr, port, transcoding="no"):
         '''
@@ -161,8 +162,8 @@ class MediaServer(log.Loggable):
         server = CoherenceMediaServer(coherence, MediaStore, **kwargs)         #TODO change here
         return server
     def stopMediaServer(self):
+        self.info("SERVER NOT WORKING ANYMORE")
         self.server.unregister()
-        self.info("UNREGISTERED")
     
 class Runserver(threading.Thread):
 
@@ -179,8 +180,6 @@ class Runserver(threading.Thread):
         self.reactor.run(installSignalHandlers=0)
     
     def stop(self):
-        print "STOPPING"
-        self.info("STOPPING")
         self.mediaServer.stopMediaServer()
         self.reactor.stop()
         self.finished.set()

@@ -3,7 +3,7 @@ Created on 21-08-2011
 
 @author: xps
 '''
-from Database2 import DBSettings, DBContent
+from Database2 import DBSettings, DBContent, DBIgnorePatterns
 import os.path
 from modCoherence import log
 
@@ -86,10 +86,17 @@ class BackendObject(log.Loggable):
         self.info("Returning settings")
         return self.dbCursor.select("settings", "id=1", True)
     
-    def create_settings(self, server_name):
+    def set_settings(self, settings_list = None):
+        data = {}
+        for i in settings_list:
+            data[i[0].strip("f_")] = i[1][0]
+        self.dbCursor.removeObject("settings", "1")
         self.info("Creating settings")
-        self.dbCursor.insert(DBSettings(server_name, create_uuid(), 'no', 'yes', None, 0, True, 300)) #TODO: change settings to be flexible
-        return self.dbCursor.select("settings", "id=1", True)
+        id = self.dbCursor.insertCommit(DBSettings(data['name'], create_uuid(), data['transcoding'], data['mimetypecontainers'], data['ip'], data['port'], True, data['maxchild'])) #TODO: change settings to be flexible        
+        if data['ignore']:
+            self.dbCursor.removeObject("ignore_patterns", "1")
+            self.dbCursor.insertCommit(DBIgnorePatterns(data['ignore']))
+        return self.dbCursor.select("settings", "id="+str(id), True)
         
     def get_server_name(self):
         self.info("Returning server name")

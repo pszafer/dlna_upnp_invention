@@ -192,10 +192,10 @@ class MediaItem(BackendItem):
             self.get_url = lambda : self.url                            #function to get url of MediaItem
             external_url = '%s%s' % (urlbase, str(self.id))  #creating of external url like http://localhost:port/uuid/dir/item
             internal_url = 'file://' + path                             #creating internal url like file:///tmp/file.txt
-            size = None                                                 #we need size of file
+            self.size = size= None                                                 #we need size of file
             res = None
             if os.path.isfile(path):                                    #make sure file exists
-                size = os.path.getsize(path)
+                self.size = size = os.path.getsize(path)
                 self.item.date = datetime.datetime.fromtimestamp(os.path.getmtime(path))    #get file change date
                 if mimetype != 'item':                                                          #make sure it has some reasonable mimetype
                     _path,_ =  os.path.splitext(path)
@@ -452,21 +452,21 @@ class MediaItem(BackendItem):
         if os.path.exists(caption_smi):
             data = {}
             caption = caption_smi
-            data["id"] = self.id.split(".")[0]+".SMI"
+            data["id"] = self.id.split(".")[0]+".smi"
             mime = "smi/caption"
             self.caption_size = os.path.getsize(caption_smi)
             data["caption"] = caption_smi
             captions[mime] = data
         if os.path.exists(caption_txt):
             data = {}
-            data["id"] = self.id.split(".")[0]+".TXT" #LG ONLY TXT
+            data["id"] = self.id.split(".")[0]+".txt" #LG ONLY TXT
             mime = "text/plain"
             self.caption_size = os.path.getsize(caption_txt)
             data["caption"] = caption_txt
             captions[mime] = data
         if os.path.exists(caption_srt):
             data = {}
-            data["id"] = self.id.split(".")[0]+".SRT"
+            data["id"] = self.id.split(".")[0]+".srt"
             mime = "text/srt"
             self.caption_size = os.path.getsize(caption_srt)    
             data["caption"] = caption_srt
@@ -870,6 +870,7 @@ class MediaStore(BackendStore):
             object_id = object_id[0]
         return self.store[object_id]
     
+    
     def get_id_by_name(self, parent=str("0"), name=''):
         self.info('get_id_by_name %r (%r) %r' % (parent, type(parent), name))
         try:
@@ -1052,7 +1053,11 @@ class MediaStore(BackendStore):
     
     def get_x_containers(self):
         return self.feature_list
-        
+    
+    def upnp_GetSearchCapabilities(self):
+        searchcaps= {}
+        searchcaps['SearchCaps'] = "dc:creator,dc:title,upnp:album,upnp:actor,upnp:artist,upnp:class,upnp:genre,@refID" 
+        return searchcaps
 
 
 def tolist(obj):

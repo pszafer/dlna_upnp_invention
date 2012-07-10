@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-02 22:13+0200\n"
-"PO-Revision-Date: 2012-07-02 14:19+0100\n"
+"POT-Creation-Date: 2012-07-10 12:41+0200\n"
+"PO-Revision-Date: 2012-07-10 12:45+0100\n"
 "Last-Translator: Pawel Szafer <pszafer@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -36,15 +36,70 @@ msgstr "Log"
 msgid "Help"
 msgstr "Help2"
 
-#: media/js/status.js:62
+#: media/js/media.js:1
+#: media/js/settings.js:21
+msgid "Save it"
+msgstr "Save it"
+
+#: media/js/media.js:2
+msgid "Delete"
+msgstr "Delete"
+
+#: media/js/media.js:3
+#: media/js/settings.js:22
+msgid "Cancel"
+msgstr "Cancel"
+
+#: media/js/media.js:4
+msgid "servernotrunning"
+msgstr "Server not running. Making changes is disabled now. Start server first."
+
+#: media/js/settings.js:12
+msgid "Name"
+msgstr "Name"
+
+#: media/js/settings.js:13
+msgid "IP Address"
+msgstr "IP Address"
+
+#: media/js/settings.js:14
+msgid "Port"
+msgstr "Port"
+
+#: media/js/settings.js:15
+msgid "Ignore patterns"
+msgstr "Ignore patterns"
+
+#: media/js/settings.js:16
+msgid "Do mimetype containers"
+msgstr "Do mimetype containers"
+
+#: media/js/settings.js:17
+msgid "Transcoding"
+msgstr "Transcoding"
+
+#: media/js/settings.js:19
+msgid "Max child items"
+msgstr "Max child items"
+
+#: media/js/status.js:60
 msgid "No UUID"
-msgstr ""
+msgstr "No UUID"
 
-#: media/js/status.js:99 media/js/status.js.py:118 media/js/status.js:132
-#: media/js/status.js.py:137 media/js/status.js:154
+#: media/js/status.js:97
+#: media/js/status.js.py:116
+#: media/js/status.js:130
+#: media/js/status.js.py:135
+#: media/js/status.js:152
 msgid "down"
-msgstr ""
+msgstr "down"
 
-#: media/js/status.js:103 media/js/status.js.py:140 media/js/status.js:145
+#: media/js/status.js:101
+#: media/js/status.js.py:106
+#: media/js/status.js:138
+#: media/js/status.js.py:143
 msgid "running"
-msgstr ""
+msgstr "running"
+
+#~ msgid "Icon"
+#~ msgstr "Icon"

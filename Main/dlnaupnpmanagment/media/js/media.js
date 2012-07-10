@@ -1,4 +1,7 @@
+gettext('Save it');
 gettext('Delete');
+gettext('Cancel');
+gettext("servernotrunning");
 function cancel_item(id){
 	$("#"+id).remove();
 }

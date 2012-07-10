@@ -24,6 +24,13 @@ function createmenu(){
 	}
 }
 
+function moveform(){
+	heightmenu = $('#menu').height();
+	margin = ''+heightmenu+' 0 0 0';
+	var langform = $('#language-form');
+	langform.css({'margin' : margin});
+}
+
 function clean_container(container){
 	// container = $(name);
 	container
@@ -63,7 +70,54 @@ function update(){
 	});
 }
 
+function getServerName(){
+	$.ajax({
+		url: "getServerName",
+		success: function(data) {
+			stat = data.Name;
+			jQuery('<div/>', {
+				class: 'title',
+				id : 'title',
+				text: '"'+stat+'"'
+			}).appendTo("#servertitle");
+		},
+		error: function(x,y,z) {
+			jQuery('<div/>', {
+				id : 'title',
+				text: ' ' 
+			}).appendTo("#servertitle");
+		}
+	});
+}
+
 function reloadPage()
 {
 	document.location.reload(1);
+}
+
+function changelanguage(){
+	var lang = {};
+	lang['Language'] = $('#language').val();
+	langform = $('#language-form');
+	$.ajax({
+		url: "changeLanguage",
+		type: "POST",
+		data: lang,
+		success: function(data) {
+			langform.removeAttr('onsubmit');
+			langform.attr("action", "/i18n/setlang/");
+			langform.attr('method', 'post');
+			$('<input>').attr({
+			    type: 'hidden',
+			    id: 'next',
+			    name: 'next',
+			}).appendTo(langform);
+			langform.submit();
+		},
+		error: function(x,y,z) {
+			langform.removeAttr('onsubmit');
+		}
+	});
+	
+	
 }

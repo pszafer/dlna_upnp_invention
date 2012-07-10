@@ -25,9 +25,9 @@ import os
 import sys
 import time
 import signal
+from modCoherence import log
 
-
-class Daemon:
+class Daemon(log.Loggable):
     """
     A generic daemon class.
     
@@ -89,13 +89,13 @@ class Daemon:
             os.dup2(se.fileno(), sys.stderr.fileno())
 
         def sigtermhandler(signum, frame):
-            print "working"
+            self.info("DAEMON LOADING")
             self.stopThread()
             self.daemon_alive = False
         signal.signal(signal.SIGUSR1, sigtermhandler)
 
         if self.verbose >= 1:
-            print "Started"
+            self.info("DAEMON STARTED")
 
         # Write pidfile
         atexit.register(self.delpid) # Make sure pid file is removed if we quit
@@ -111,7 +111,7 @@ class Daemon:
         """
 
         if self.verbose >= 1:
-            print "Starting..."
+            self.info("DAEMON STARTING")
 
         # Check for a pidfile to see if the daemon already runs
         try:
@@ -125,7 +125,7 @@ class Daemon:
 
         if pid:
             message = "pidfile %s already exists. Is it already running?\n"
-            print message
+            self.info(message)
             sys.stderr.write(message % self.pidfile)
             sys.exit(1)
 
@@ -138,9 +138,8 @@ class Daemon:
         Stop the daemon
         """
         self.stopMediaServer()
-        print "test2"
         if self.verbose >= 1:
-            print "Stopping..."
+            self.info("Stopping")
 
         # Get the pid from the pidfile
         try:
@@ -154,6 +153,7 @@ class Daemon:
 
         if not pid:
             message = "pidfile %s does not exist. Not running?\n"
+            self.info(message)
             sys.stderr.write(message % self.pidfile)
 
             # Just to be sure. A ValueError might occur if the PID file is empty but does actually exist
@@ -177,7 +177,7 @@ class Daemon:
                 if os.path.exists(self.pidfile):
                     os.remove(self.pidfile)
             else:
-                print str(err)
+                self.info(str(err))
                 sys.exit(1)
 
         if self.verbose >= 1:
@@ -204,12 +204,12 @@ class Daemon:
         self.serverProcess.stop()
 if __name__ == "__main__":
     pidno = sys.argv[1]
-    def stop(pidno):
+    def stop(self, pidno):
             """
             Stop the daemon
             """
     
-            print "Stopping..."    
+            self.info("Stopping...")    
             try:
                 a = 1
                 while 1:
@@ -222,5 +222,5 @@ if __name__ == "__main__":
                 err = str(err)
                 sys.exit(1)
     
-            print "Stopped"
+            self.info("Stopped")
     stop(pidno)

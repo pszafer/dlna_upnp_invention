@@ -3,67 +3,110 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-02 22:05+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-07-09 13:42+0200\n"
+"PO-Revision-Date: 2012-07-03 15:47+0100\n"
+"Last-Translator: Pawel Szafer <pszafer@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: templates/dlnaupnpmanage/logs.html:4
+#: templates/dlnaupnpmanage/help.html:4 templates/dlnaupnpmanage/logs.html:4
 msgid "SETTINGS"
+msgstr "Settings"
+
+#: templates/dlnaupnpmanage/help.html:50 templates/dlnaupnpmanage/logs.html:51
+#: templates/dlnaupnpmanage/media.html:99
+#: templates/dlnaupnpmanage/settings.html:76
+#: templates/dlnaupnpmanage/status.html:58
+msgid "DLNA UPnP A/V Media Server"
+msgstr "DLNA UPnP A/V Media Server"
+
+#: templates/dlnaupnpmanage/help.html:51 templates/dlnaupnpmanage/logs.html:52
+#: templates/dlnaupnpmanage/media.html:100
+#: templates/dlnaupnpmanage/settings.html:77
+#: templates/dlnaupnpmanage/status.html:59
+msgid "Managing webpage"
+msgstr "Managing panel"
+
+#: templates/dlnaupnpmanage/help.html:74 templates/dlnaupnpmanage/logs.html:75
+#: templates/dlnaupnpmanage/media.html:123
+#: templates/dlnaupnpmanage/settings.html:100
+#: templates/dlnaupnpmanage/status.html:86
+msgid "Go"
+msgstr "Change language"
+
+#: templates/dlnaupnpmanage/help.html:78
+msgid "Help"
 msgstr ""
+
+#: templates/dlnaupnpmanage/logs.html:79
+msgid "Logs"
+msgstr "Logs"
+
+#: templates/dlnaupnpmanage/logs.html:80
+#: templates/dlnaupnpmanage/media.html:128
+#: templates/dlnaupnpmanage/settings.html:105
+#: templates/dlnaupnpmanage/status.html:91
+msgid "Autorefreshing is enabled"
+msgstr "Autorefreshing is enabled"
+
+#: templates/dlnaupnpmanage/logs.html:81
+#: templates/dlnaupnpmanage/media.html:129
+#: templates/dlnaupnpmanage/settings.html:106
+#: templates/dlnaupnpmanage/status.html:92
+msgid "Refresh interval: 20 seconds"
+msgstr "Refresh interval: 20 seconds"
 
 #: templates/dlnaupnpmanage/media.html:4
 msgid "MEDIA ITEMS"
-msgstr ""
+msgstr "Media Items"
 
-#: templates/dlnaupnpmanage/media.html:115
-#: templates/dlnaupnpmanage/status.html:74
-msgid "Autorefreshing is enabled"
-msgstr ""
+#: templates/dlnaupnpmanage/media.html:127
+msgid "Media"
+msgstr "Media"
 
-#: templates/dlnaupnpmanage/media.html:116
-#: templates/dlnaupnpmanage/status.html:75
-msgid "Refresh interval: 20 seconds"
-msgstr ""
-
-#: templates/dlnaupnpmanage/media.html:119
+#: templates/dlnaupnpmanage/media.html:132
 msgid "Add content row"
-msgstr ""
+msgstr "Add content row"
 
-#: templates/dlnaupnpmanage/settings.html:75
-#: templates/dlnaupnpmanage/status.html:57
-msgid "DLNA UPNP SERVER"
-msgstr ""
+#: templates/dlnaupnpmanage/settings.html:104
+msgid "Settings"
+msgstr "Settings"
 
 #: templates/dlnaupnpmanage/status.html:5
 msgid "STATUS"
-msgstr ""
+msgstr "STATUS"
 
-#: templates/dlnaupnpmanage/status.html:83
-msgid "Reload configuration"
-msgstr ""
-
-#: templates/dlnaupnpmanage/status.html:88
-msgid "Server status"
-msgstr ""
-
-#: templates/dlnaupnpmanage/status.html:92
-msgid "Managing service is:"
-msgstr ""
+#: templates/dlnaupnpmanage/status.html:90
+msgid "Status"
+msgstr "Status"
 
 #: templates/dlnaupnpmanage/status.html:100
-msgid "UPNP Service is:"
-msgstr ""
+msgid "Reload configuration"
+msgstr "Reload configuration"
+
+#: templates/dlnaupnpmanage/status.html:105
+msgid "Server name"
+msgstr "Server name"
+
+#: templates/dlnaupnpmanage/status.html:113
+msgid "Server status"
+msgstr "Server status"
 
 #: templates/dlnaupnpmanage/status.html:117
+msgid "Managing service is:"
+msgstr "Managing service is:"
+
+#: templates/dlnaupnpmanage/status.html:125
+msgid "UPNP Service is:"
+msgstr "UPnP Service is:"
+
+#: templates/dlnaupnpmanage/status.html:142
 msgid "Shared media content:"
-msgstr ""
+msgstr "Shared media content:"

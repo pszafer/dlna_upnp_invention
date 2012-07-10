@@ -124,8 +124,8 @@ class UPnPPublisher(resource.Resource, log.Loggable):
         #methodName, args, kwargs, ns = p._name, p._aslist, p._asdict, p._ns
 
         try:
-            headers['content-type'].index('text/xml; charset=\"utf-8\"')
-        except:
+            headers['content-type'].index('text/xml')
+        except Exception, e:
             self._gotError(failure.Failure(errorCode(415)), request, methodName)
             return server.NOT_DONE_YET
 

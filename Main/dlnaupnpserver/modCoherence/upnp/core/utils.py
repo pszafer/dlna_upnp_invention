@@ -13,15 +13,16 @@ from modCoherence.extern.et import parse_xml as et_parse_xml
 from modCoherence import SERVER_ID
 
 
-from twisted.web import server, http, static
+from twisted.web import static
 from twisted.web import client, error
-from twisted.web import proxy, resource, server
+from twisted.web import proxy, resource
 from twisted.internet import reactor,protocol,defer,abstract
 from twisted.python import failure
 
 from twisted.python.util import InsensitiveDict
 
-
+import modCoherence.upnp.core.modhttp as http
+import modserver as server
 try:
     from twisted.protocols._c_urlarg import unquote
 except ImportError:
@@ -220,12 +221,17 @@ class Request(server.Request):
 
         # get site from channel
         self.site = self.channel.site
-
+        rendersubs = False
         # set various default headers
+        #self.setHeader('SERVER', SERVER_ID + " UPnP/1.0 DLNADOC/1.50 DLNADOC/1.00")
         header = "Coherence DLNADOC/1.50 UPnP/1.0 DLNADOC/1.00"
         self.setHeader('server', header)
         #self.setHeader('date', http.datetimeToString())
-        self.setHeader('content-type', "text/html")
+        if self.requestHeaders.hasHeader('getcaptioninfo.sec'):
+            rendersubs = True
+            self.setHeader('Content-Tsype', "video/x-msvideo")
+        else:
+            self.setHeader('content-type', "text/html")
 
         # Resource Identification
         url = self.path
@@ -738,6 +744,25 @@ class StaticFile(static.File):
         static.FileTransfer(f, size, request)
         # and make sure the connection doesn't get closed
         return server.NOT_DONE_YET
+
+class Data(resource.Resource):
+    """
+    This is a static, in-memory resource.
+    """
+
+    def __init__(self, data, type, request):
+        resource.Resource.__init__(self)
+        self.request = request
+        self.data = data
+        self.type = type
+
+
+    def render_GET(self, request):
+        if request.method == "HEAD":
+            return ''
+        return self.data
+    render_HEAD = render_GET
+
 
 class BufferFile(static.File):
     """ taken from twisted.web.static and modified
